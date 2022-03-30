@@ -8,20 +8,23 @@ public class Pion {
         this.y = y;
     }
 
-    public int get_x(){
+    public int getX(){
         return this.x;
     }
 
-    public int get_y(){
+    public int getY(){
         return this.y;
     }
 
-    public void set_x(int x){
+    public void setX(int x){
         this.x = x;
     }
 
-    public void set_y(int y){
+    public void setY(int y){
         this.y = y;
     }
     
+    public Pion getCopie(){
+        return new Pion(x, y);
+    }
 }
