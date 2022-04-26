@@ -1,8 +1,8 @@
 public class Player{
-    int score, nbGhostCaught;//le deuxieme a voir si c'est utile
-    int row, col;
-    String username;//"id" dans le sujet
-    boolean waiting;//avant que la partie commence?
+    private int score, nbGhostCaught;//le deuxieme a voir si c'est utile
+    private int row, col;
+    private String username;//"id" dans le sujet
+    private boolean waiting=false;//avant que la partie commence?
 
     Player(String username){
         this.username=username;
@@ -21,46 +21,46 @@ public class Player{
     }
 
     void catchGhost(Ghost ghost){
-        this.score+=ghost.points;
+        this.score+=ghost.getPoints();
         nbGhostCaught++;
     }
 
     /* FONCTIONS DE DEPLACEMENT */
     //principe : si la prochaine case est un mur, on s'arrete a la case actuelle
     void moveUp(Case[][] maze, int rowDest){
-        int currentRow=this.row;
-        while(currentRow>0 && currentRow!=rowDest){
-            if(maze[currentRow-1][this.col].isWall()) break;
-            currentRow--;
+        while(this.row>0 && this.row!=rowDest){
+            if(maze[this.row-1][this.col].isWall()) break;
+            maze[this.row][this.col].removePlayer();
+            this.row--;
+            maze[this.row][this.col].addPlayer();
         }
-        this.row=currentRow;
     }
     
     void moveRight(Case[][] maze, int colDest){
-        int currentCol=this.col;
-        while(currentCol<maze[0].length-1 || currentCol!=colDest){
-            if(maze[this.row][currentCol+1].isWall()) break;
-            currentCol++;
+        while(this.col<maze[0].length-1 || this.col!=colDest){
+            if(maze[this.row][this.col+1].isWall()) break;
+            maze[this.row][this.col].removePlayer();
+            this.col++;
+            maze[this.row][this.col].addPlayer();
         }
-        this.col=currentCol;
     }
     
     void moveDown(Case[][] maze, int rowDest){
-        int currentRow=this.row;
-        while(currentRow<maze.length-1 && currentRow!=rowDest){
-            if(maze[currentRow+1][this.col].isWall()) break;
-            currentRow++;
+        while(this.row<maze.length-1 && this.row!=rowDest){
+            if(maze[this.row+1][this.col].isWall()) break;
+            maze[this.row][this.col].removePlayer();
+            this.row++;
+            maze[this.row][this.col].addPlayer();
         }
-        this.row=currentRow;
     }
     
     void moveLeft(Case[][] maze, int colDest){
-        int currentCol=this.col;
-        while(currentCol>0 || currentCol!=colDest){
-            if(maze[this.row][currentCol-1].isWall()) break;
-            currentCol--;
+        while(this.col>0 || this.col!=colDest){
+            if(maze[this.row][this.col-1].isWall()) break;
+            maze[this.row][this.col].removePlayer();
+            this.col--;
+            maze[this.row][this.col].addPlayer();
         }
-        this.col=currentCol;
     }
     /* FIN FONCTIONS DE DEPLACEMENT */
 }

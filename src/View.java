@@ -1,4 +1,6 @@
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -8,11 +10,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class View extends JFrame{
-    private MazeGenerator mazeG;
-    BufferedImage display;
+    private Case[][] maze;
+    private BufferedImage display;
+    //TODO : repaint les Case qui ont needRefresh à true
     
-    View(MazeGenerator m){
-        this.mazeG=m;
+    View(Case[][] maze){
+        this.maze=maze;
         
         this.setTitle("Maze");
         this.setVisible(true);//fenetre visible pour placer les boutons
@@ -23,7 +26,8 @@ public class View extends JFrame{
         this.setResizable(false);
         this.setLayout(null);
         
-        //labyrinthe
+        //TODO : readapter la vue a partir de la
+        /*//labyrinthe
         drawMaze();
         drawPerso();
         JPanel mazePanel=new MazePanel();
@@ -34,16 +38,16 @@ public class View extends JFrame{
         ChatPanel chatPanel=new ChatPanel(new WrapLayout(WrapLayout.LEFT, 5, 5));
         JScrollPane scrollP=new JScrollPane(chatPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollP.setBounds(600, 0,
                 200-scrollP.getVerticalScrollBar().getPreferredSize().width,
-                600-View.this.getInsets().top-View.this.getInsets().bottom);
+                600-scrollP.getHorizontalScrollBar().getPreferredSize().height-View.this.getInsets().top);
         scrollP.getVerticalScrollBar().setUnitIncrement(12);//vitesse de scroll
-        this.add(scrollP);
+        this.add(scrollP);*/
     }
     
-    void drawMaze(){
-        display=new BufferedImage(2*mazeG.x+1, 2*mazeG.y+1, BufferedImage.TYPE_INT_RGB);
+    /*void drawMaze(){
+        display=new BufferedImage(2*mazeG.height+1, 2*mazeG.width+1, BufferedImage.TYPE_INT_RGB);
         
         //mur de droite
         for(int i=0; i<display.getHeight(); i++)
@@ -52,8 +56,8 @@ public class View extends JFrame{
         for(int i=0; i<display.getWidth(); i++)
             display.setRGB(i, display.getHeight()-1, Color.BLACK.getRGB());
         
-        for (int i=0; i<mazeG.y; i++){
-            for (int j=0; j<mazeG.x; j++){
+        for (int i=0; i<mazeG.width; i++){
+            for (int j=0; j<mazeG.height; j++){
                 if((mazeG.maze[j][i] & 1)==0){
                     display.setRGB(2*j, 2*i, Color.BLACK.getRGB());
                     display.setRGB(2*j+1, 2*i, Color.BLACK.getRGB());
@@ -64,7 +68,7 @@ public class View extends JFrame{
                 }
             }
             
-            for(int j=0; j<mazeG.x; j++){
+            for(int j=0; j<mazeG.height; j++){
                 if((mazeG.maze[j][i] & 8)==0){
                     display.setRGB(2*j, 2*i+1, Color.BLACK.getRGB());
                     display.setRGB(2*j+1, 2*i+1, Color.WHITE.getRGB());
@@ -109,17 +113,18 @@ public class View extends JFrame{
         
         ChatPanel(WrapLayout w){
             super(w);
-            for(int i=0; i<200; i++) moves.add("test"+i+"   ");
+            for(int i=0; i<150; i++) moves.add("joueur n°1 : on ne peut pas aller à gauche");
         }
         
         protected void paintComponent(Graphics g){
             super.paintComponent(g);
             while(!moves.isEmpty()){
-                this.add(new JLabel(moves.remove(0)));
-                /*FontMetrics metric=g.getFontMetrics();
-                String toWrite=moves.remove(0);
-                g.drawString(toWrite, 0, 10);*/
+                JPanel tmp=new JPanel(new FlowLayout());
+                JLabel toAdd=new JLabel(moves.remove(0));
+                toAdd.setPreferredSize(new Dimension(200, 50));
+                tmp.add(toAdd);
+                this.add(tmp, 0);
             }
         }
-    }
+    }*/
 }

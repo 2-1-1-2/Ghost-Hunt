@@ -1,37 +1,61 @@
 public class Case{
-    int type;//0=vide, 1=mur, 2=joueur
-    int nbPlayers;//peut etre utile
-    Item item;
-    Ghost ghost;
-
-    Case(){}//case vide
-
-    Case(int type){
-        this.type=type;
-    }
-
-    Case(Item item){
-        this.item=item;
+    private boolean isWall;
+    private int nbPlayers=0;
+    private Item item=null;
+    private Ghost ghost=null;
+    private boolean needRefresh=false;
+    
+    Case(boolean isWall){
+        this.isWall=isWall;
     }
 
     boolean isWall(){
-        return this.type==1;
+        return this.isWall;
+    }
+    
+    
+    
+    //le joueur p se rajoute dans la case lui-meme : p appelle case[][].addPlayer()
+    void addPlayer(){
+        this.needRefresh=true;
+        this.nbPlayers++;
+    }
+    
+    void removePlayer(){
+        this.needRefresh=true;
+        this.nbPlayers--;
+    }
+    
+    boolean havePlayer(){
+        return this.nbPlayers>0;
+    }
+    
+    
+    
+    void addGhost(Ghost ghost){
+        this.needRefresh=true;
+        this.ghost=ghost;
     }
 
     void removeGhost(){
+        this.needRefresh=true;
         this.ghost=null;
     }
 
     boolean hasGhost(){
         return this.ghost!=null;
     }
-
-    void takeItem(){
-        this.item=null;
-    }
+    
+    
 
     void dropItem(Item item){
+        this.needRefresh=true;
         this.item=item;
+    }
+
+    void takeItem(){
+        this.needRefresh=true;
+        this.item=null;
     }
 
     boolean hasItem(){

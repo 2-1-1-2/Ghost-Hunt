@@ -11,12 +11,38 @@ public class Server{
     static LinkedList<ServiceClient> connectedUsers=new LinkedList<ServiceClient>();
     static int nbClients=0;
 
-    static boolean idOk(String id){//verifie qu'il n'y a pas de joueur qui porte deja ce pseudo
-        for(ServiceClient client:connectedUsers){
+    /* FONCTIONS DE MODIF SUR LES PARTIES */
+    synchronized static void incGames(){
+        nbGames++;
+    }
+
+    synchronized static int getNbGames(){
+        return nbGames;
+    }
+
+    synchronized static void addInGame(Player p, int numGame){
+        
+    }
+
+    synchronized static void addGame(Game g){
+        games.add(g);
+    }
+    /* FIN FONCTIONS DE MODIF SUR LES PARTIES */
+
+    /* FONCTIONS TESTS DE VALIDITE */
+    static boolean idOk(String id){
+        for(int i=0; i<id.length(); i++){//check si c'est bien un alphanumerique (ASCII)
+            if(!((id.charAt(i)>='a' && id.charAt(i)<='z') ||
+                (id.charAt(i)>='A' && id.charAt(i)<='Z')) ||
+                (id.charAt(i)>='0' && id.charAt(i)<='9'))
+                return false;
+        }
+        for(ServiceClient client:connectedUsers){//check qu'il n'y a pas de joueur qui porte deja ce pseudo
             if(client.id.equals(id)) return false;
         }
-        return true;
+        return true && id.length()==8;
     }
+    /* FIN FONCTIONS TESTS DE VALIDITE */
 
     /* FONCTIONS D'INFORMATION SUR LES PARTIES */
     synchronized static boolean gameExists(int numGame){
