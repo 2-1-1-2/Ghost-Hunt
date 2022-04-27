@@ -12,7 +12,7 @@ import javax.swing.JScrollPane;
 public class View extends JFrame{
     private Case[][] maze;
     private BufferedImage display;
-    //TODO : repaint les Case qui ont needRefresh à true
+    //TODO: repaint les Case qui ont needRefresh à true
     
     View(Case[][] maze){
         this.maze=maze;
@@ -26,7 +26,8 @@ public class View extends JFrame{
         this.setResizable(false);
         this.setLayout(null);
         
-        //TODO : readapter la vue a partir de la
+        //TODO: readapter la vue a partir de la
+        //TODO: chatbox
         /*//labyrinthe
         drawMaze();
         drawPerso();

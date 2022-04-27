@@ -3,35 +3,45 @@ import java.util.LinkedList;
 
 public class Game{
     private int numGame;
+    private boolean onGoing=false;
+    
+    private Case[][] maze;
+    private int nbGhostsRemain;
+    
     private LinkedList<Player> players=new LinkedList<Player>();
     private int nbPlayers=0;
+    
     private InetSocketAddress addressMultiD;
     private int portMultiD;
-    private boolean onGoing=false;
-    private Case[][] maze;
 
     Game(Player creator, int nbGames){
         Server.incGames();
         this.numGame=nbGames+1;
         this.players.add(creator);
         this.nbPlayers++;
-
+        
         //creation de l'adresse de multidiffusion en fonction du nb de parties créées
         //a voir si ok pcq d'apres le cours toutes les adresses ne sont pas dispo
         this.portMultiD=7777;
-        this.addressMultiD=new InetSocketAddress("225.066.066."+nbGames, portMultiD);
+        this.addressMultiD=new InetSocketAddress("225.066.066."+numGame, portMultiD);
+        
+        generateMaze();
     }
-
+    
     int getNum(){
         return numGame;
     }
 
     int getWidth(){
-        return (onGoing)?maze[0].length:-1;
+        return maze[0].length;
     }
 
     int getHeight(){
-        return (onGoing)?maze.length:-1;
+        return maze.length;
+    }
+    
+    int getNbGhosts(){
+        return this.nbGhostsRemain;
     }
 
     int getNbPlayers(){
@@ -46,16 +56,28 @@ public class Game{
         this.players.add(p);
         this.nbPlayers++;
     }
+    
+    //TODO: verifier si c'est bien ca qu'il faut retourner (ip=225.10.12.4#### par exemple)
+    String getIP(){
+        String res=this.addressMultiD.getAddress().toString();
+        for(int i=res.length(); i<16; i++) res+="#";
+        return res;
+    }
+    
+    int getPort(){
+        return this.portMultiD;
+    }
 
-    //TODO : generer maze, a appeler une fois la partie commencee (e.g. tous les joueurs ont envoye "START")
     void generateMaze(){
-        int height=(int)(Math.random()*nbPlayers)+nbPlayers*2+1;
-        int width=(int)(Math.random()*nbPlayers)+nbPlayers*2+1;
+        int height=(int)(Math.random()*20)+10;
+        int width=(int)(Math.random()*20)+10;
         MazeGenerator generator=new MazeGenerator(height, width);
         
         maze=new Case[2*height+1][2*width+1];
+        
         //mur de droite
         for(int i=0; i<maze.length; i++) maze[maze[0].length-1][i]=new Case(true);
+        
         //mur du bas
         for(int i=0; i<maze[0].length; i++) maze[i][maze.length-1]=new Case(true);
         
@@ -84,7 +106,11 @@ public class Game{
         }
     }
     
-    //TODO : mettre onGoing à true en commencant la partie
+    //la partie commence
+    void gameStart(){
+        onGoing=true;
+        nbGhostsRemain=(int)(Math.random()*nbPlayers)+nbPlayers+1;
+    }
 
     //TODO:
     /* FONCTIONS DE DEROULEMENT DE JEU */

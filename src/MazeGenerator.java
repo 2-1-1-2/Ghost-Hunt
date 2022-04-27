@@ -54,6 +54,7 @@ public class MazeGenerator{
         return (v>=0) && (v<upper);
     }
 
+    //TODO: check si le reste est encore utile (pas de version terminal normalement ?)
     /*public void display() {
         for (int i = 0; i < width; i++) {
             // draw the north edge

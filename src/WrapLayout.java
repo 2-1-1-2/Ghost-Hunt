@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 
+//TODO: encore utile pour chatbox ? a voir plus tard...
 public class WrapLayout extends FlowLayout{
     public WrapLayout(int align, int hgap, int vgap){
         super(align, hgap, vgap);

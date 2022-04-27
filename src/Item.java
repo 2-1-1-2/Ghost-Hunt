@@ -1,6 +1,6 @@
 public class Item{
     private int row, col;
-    //TODO : augmenter la liste d'items 
+    //TODO: augmenter la liste d'items 
     private int type; //0=bombe ; 1=lampe
 
     //generer une position random a partir du labyrinthe
