@@ -83,10 +83,10 @@ public class Game{
         maze=new Case[2*height+1][2*width+1];
         
         //mur de droite
-        for(int i=0; i<maze.length; i++) maze[maze[0].length-1][i]=new Case(true);
+        for(int i=0; i<maze.length; i++) maze[i][maze[0].length-1]=new Case(true);
         
         //mur du bas
-        for(int i=0; i<maze[0].length; i++) maze[i][maze.length-1]=new Case(true);
+        for(int i=0; i<maze[0].length; i++) maze[maze.length-1][i]=new Case(true);
         
         for(int i=0; i<width; i++){
             for(int j=0; j<height; j++){
