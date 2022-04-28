@@ -47,6 +47,14 @@ public class Server{
     private static LinkedList<ServiceClient> connectedUsers=new LinkedList<ServiceClient>();
     private static int nbClients=0;
 
+    synchronized static void incClients(){
+        nbClients++;
+    }
+
+    synchronized static int getNbClients(){
+        return nbClients;
+    }
+
     /* FONCTIONS DE MODIF SUR LES PARTIES */
     synchronized static void incGames(){
         nbGames++;
@@ -65,7 +73,7 @@ public class Server{
 
     //creation d'une nouvelle partie apres NEWPL
     synchronized static Game addGame(Player p){
-        Game g=new Game(p, nbGames);
+        Game g=new Game(p);
         games.add(g);
         return g;
     }
@@ -74,16 +82,11 @@ public class Server{
     
     /* FONCTIONS TESTS DE VALIDITE */
     static boolean idOk(String id){
-        for(int i=0; i<id.length(); i++){//check si c'est bien un alphanumerique (ASCII)
-            if(!((id.charAt(i)>='a' && id.charAt(i)<='z') ||
-                (id.charAt(i)>='A' && id.charAt(i)<='Z')) ||
-                (id.charAt(i)>='0' && id.charAt(i)<='9'))
+        for(ServiceClient client:connectedUsers){//check qu'il n'y a pas de joueur qui porte deja ce pseudo
+            if(client.getID()!=null && client.getID().equals(id))
                 return false;
         }
-        for(ServiceClient client:connectedUsers){//check qu'il n'y a pas de joueur qui porte deja ce pseudo
-            if(client.getID().equals(id)) return false;
-        }
-        return id.length()==8;
+        return id.matches("[a-zA-Z0-9]{8}");
     }
     /* FIN FONCTIONS TESTS DE VALIDITE */
 
@@ -96,24 +99,36 @@ public class Server{
         return false;
     }
 
+    //tester si tous les joueurs ont envoye START
+    synchronized static boolean canStart(int numGame){
+        for(Player p: games.get(numGame).getListPlayers()){
+            if(!p.sentStart()) return false;
+        }
+        return true;
+    }
+
     //premiere fonction a executer, quand le joueur se connecte
     synchronized static String listGames(){
-        String toSend="GAMES "+nbGames+"***";
+        String toSend="GAMES "+(byte)nbGames+"***";
         for(Game g: games)
-            toSend+="OGAME "+g.getNum()+" "+g.getNbPlayers()+"***";
+            toSend+="OGAME "+(byte)(g.getNum())+" "+(byte)(g.getNbPlayers())+"***";
         return toSend;
     }
 
     //reponse a SIZE?
     static String sizeMaze(int numGame){
         Game g=games.get(numGame);
-        return "SIZE! "+numGame+" "+g.getHeight()+" "+g.getWidth()+"***";
+        int h=g.getHeight();
+        byte[] hBytes=new byte[]{(byte)(h & 0xFF), (byte)((h>>8) & 0xFF)};
+        int w=g.getWidth();
+        byte[] wBytes=new byte[]{(byte)(w & 0xFF), (byte)((w>>8) & 0xFF)};
+        return "SIZE! "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+"***";
     }
 
     //reponse a LIST?
     synchronized static String listPlayers(int numGame){
         Game g=games.get(numGame);
-        String toSend="LIST! "+numGame+" "+g.getNbPlayers()+"***";
+        String toSend="LIST! "+(byte)numGame+" "+(byte)(g.getNbPlayers())+"***";
         for(Player p: g.getListPlayers())
             toSend+=p;//appel a p.toString()
         return toSend;
@@ -121,13 +136,15 @@ public class Server{
     /* FIN FONCTIONS D'INFORMATION */
 
     
-    //TODO:
-    //quand tous les joueurs ont envoye STRAT
     static String sendWelcome(int numGame){
         Game g=games.get(nbGames);
         g.gameStart();
-        String toSend="WELCO "+numGame+" "+g.getHeight()+" "+g.getWidth()+" "
-                +g.getNbGhosts()+" "+g.getIP()+" "+g.getPort()+"***";
+        int h=g.getHeight();
+        byte[] hBytes=new byte[]{(byte)(h & 0xFF), (byte)((h>>8) & 0xFF)};
+        int w=g.getWidth();
+        byte[] wBytes=new byte[]{(byte)(w & 0xFF), (byte)((w>>8) & 0xFF)};
+        String toSend="WELCO "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+" "
+                +(byte)(g.getNbGhosts())+" "+g.getIP()+" "+g.getPort()+"***";
         return toSend;
     }
 

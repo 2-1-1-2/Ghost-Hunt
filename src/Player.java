@@ -2,7 +2,7 @@ public class Player{
     private int score, nbGhostCaught;//le deuxieme a voir si c'est utile
     private int row, col;
     private String username;//"id" dans le sujet
-    private boolean waiting=false;//avant que la partie commence?
+    private boolean startOk=false;
 
     Player(String username){
         this.username=username;
@@ -12,12 +12,12 @@ public class Player{
         return "PLAYR "+username+"***";
     }
 
-    boolean isWaiting(){
-        return waiting;
+    boolean sentStart(){
+        return startOk;
     }
 
-    void setWaitStatus(boolean isWaiting){
-        this.waiting=isWaiting;
+    void setStartStatus(boolean startOk){
+        this.startOk=startOk;
     }
 
     void catchGhost(Ghost ghost){

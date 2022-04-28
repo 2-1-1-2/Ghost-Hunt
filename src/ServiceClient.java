@@ -33,7 +33,7 @@ X SEND? player.username message***
 
 public class ServiceClient implements Runnable{//en fait, c'est une extension du Server
     private Socket sock;
-    private String id;
+    private String id=null;
     private BufferedReader reader;
     private PrintWriter writer;
     private Player player=null;//a instancier seulement si le client s'inscrit ou cree une partie
@@ -44,6 +44,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         this.sock=socket;
         this.reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.writer=new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+        Server.incClients();
     }
 
     /**
@@ -80,35 +81,40 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         }
         Scanner sc=new Scanner(msg);
         String type=sc.next();
-        //TODO: contains ? pas equal ?
-        if(type.contains("NEWPL")){
+        //TODO:
+        if(type.equals("NEWPL")){
             this.id=sc.next();
+            System.out.println(id);
             if(!Server.idOk(this.id)) dunno();
             else{
                 this.player=new Player(id);
-                this.port=sc.nextInt();
+                this.port=Integer.valueOf(sc.next().substring(0, 4));
                 createGame(this.port);
             }
             
         }
-        else if(type.contains("REGIS")){
+        else if(type.equals("REGIS")){
             //TODO: sortir la condition du joueur existant et le mettre juste apres avoir obtenu String type ?
             if(player==null){
                 this.id=sc.next();
                 if(!Server.idOk(this.id)) dunno();
                 else{
                     this.player=new Player(id);
-                    this.port=sc.nextInt();
+                    this.port=Integer.valueOf(sc.next().substring(0, 4));
                 }
             }
             else 
                 for(int i=0; i<2; i++) sc.next();//e.g si apres un UNREG et le joueur existe deja
-            register(this.port, sc.nextInt());
+            register(this.port, sc.next().charAt(0));
         }
-        else if(type.contains("START")){}
-        else if(type.contains("SIZE?")){}
-        else if(type.contains("LIST?")){}
-        else if(type.contains("GAME?")){}
+        else if(type.equals("START"))
+            start();
+        else if(type.equals("SIZE?")) 
+            size(sc.next().charAt(0));
+        else if(type.equals("LIST?"))
+            listPlayers(sc.next().charAt(0));
+        else if(type.equals("GAME?"))
+            listGames();
         else dunno();
     }
 
@@ -135,14 +141,25 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     //TODO: quand un joueur envoie START
     //regarder la partie dans laquelle il est inscrit (=game)
     //pour voir si on peut faire appel a Server.sendWelcome()
-        //si tous les joueurs sont en train de waiting, alors lancer la partie
-        //sinon, juste changer le boolean waiting
+    //si tous les joueurs sont en train de waiting, alors lancer la partie
+    //sinon, juste changer le boolean waiting
     void start(){
-        
+        if(this.game!=null && !this.player.sentStart()){
+            this.player.setStartStatus(true);
+            if(Server.canStart(this.game.getNum()))
+                Server.sendWelcome(this.game.getNum());
+        }
+        else if(this.game==null) dunno();
+        //si le joueur a deja start, on ne fait rien du tout
+        //comme un "bloquage"
     }
 
     void unregister(){
-        //TODO
+        if(this.game!=null){
+            this.game.removePlayer(player);
+            this.game=null;
+        }
+        else dunno();
     }
 
     void size(int numGame){
@@ -163,6 +180,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         else dunno();
     }
 
+    void listGames(){
+        String games=Server.listGames();
+        writer.print(games);
+        writer.flush();
+    }
+
     void dunno(){
         writer.print("DUNNO***");
         writer.flush();
@@ -179,12 +202,10 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     public void run(){
         //envoyer la liste des parties
-        String games=Server.listGames();
-        writer.print(games);
-        writer.flush();
+        listGames();
 
         //COMMUNICATION AVANT LA PARTIE
-        while(player==null || player.isWaiting()){
+        while(player==null || !player.sentStart()){
             try{
                 parseReplyBeforeStart();
             }

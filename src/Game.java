@@ -14,9 +14,9 @@ public class Game{
     private InetSocketAddress addressMultiD;
     private int portMultiD;
 
-    Game(Player creator, int nbGames){
+    Game(Player creator){
         Server.incGames();
-        this.numGame=nbGames+1;
+        this.numGame=Server.getNbGames();
         this.players.add(creator);
         this.nbPlayers++;
         
@@ -55,6 +55,13 @@ public class Game{
     synchronized void addPlayer(Player p){
         this.players.add(p);
         this.nbPlayers++;
+    }
+
+    synchronized void removePlayer(Player p){
+        if(players.contains(p)){
+            players.remove(p);
+            nbPlayers--;
+        }
     }
     
     //TODO: verifier si c'est bien ca qu'il faut retourner (ip=225.10.12.4#### par exemple)
