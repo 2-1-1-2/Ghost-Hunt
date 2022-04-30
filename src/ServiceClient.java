@@ -156,7 +156,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
     void unregister(){
         if(this.game!=null){
-            this.game.removePlayer(player);
+            this.game.removePlayerFromGame(player);
             this.game=null;
         }
         else dunno();
@@ -194,6 +194,22 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     
     /* TRAITEMENT DES COMMANDES LORS D'UNE PARTIE */
+    void moveUp(int nbStep){
+        this.game.moveUp(this.player, nbStep);
+    }
+    
+    void moveRight(int nbStep){
+        this.game.moveRight(this.player, nbStep);
+    }
+    
+    void moveDown(int nbStep){
+        this.game.moveDown(this.player, nbStep);
+    }
+    
+    void moveLeft(int nbStep){
+        this.game.moveLeft(this.player, nbStep);
+    }
+    
     void quit(){
         //TODO: envoyer gobye et supprimer le client de la partie
     }

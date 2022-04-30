@@ -6,6 +6,8 @@ public class Game{
     private boolean onGoing=false;
     
     private Case[][] maze;
+    
+    private LinkedList<Ghost> ghosts=new LinkedList<Ghost>();
     private int nbGhostsRemain;
     
     private LinkedList<Player> players=new LinkedList<Player>();
@@ -13,12 +15,12 @@ public class Game{
     
     private InetSocketAddress addressMultiD;
     private int portMultiD;
+    
+    private View view=null;
 
     Game(Player creator){
         Server.incGames();
         this.numGame=Server.getNbGames();
-        this.players.add(creator);
-        this.nbPlayers++;
         
         //creation de l'adresse de multidiffusion en fonction du nb de parties créées
         //a voir si ok pcq d'apres le cours toutes les adresses ne sont pas dispo
@@ -26,6 +28,7 @@ public class Game{
         this.addressMultiD=new InetSocketAddress("225.066.066."+numGame, portMultiD);
         
         generateMaze();
+        this.addPlayerInGame(creator);
     }
     
     int getNum(){
@@ -40,6 +43,14 @@ public class Game{
         return maze.length;
     }
     
+    int[][] getMazeColor(){
+        int[][] res=new int[getHeight()][getWidth()];
+        for(int i=0; i<getHeight(); i++)
+            for(int j=0; j<getWidth(); j++)
+                res[i][j]=maze[i][j].getColor();
+        return res;
+    }
+    
     int getNbGhosts(){
         return this.nbGhostsRemain;
     }
@@ -48,20 +59,10 @@ public class Game{
         return nbPlayers;
     }
 
-    LinkedList<Player> getListPlayers(){
-        return players;
-    }
-
-    synchronized void addPlayer(Player p){
-        this.players.add(p);
-        this.nbPlayers++;
-    }
-
-    synchronized void removePlayer(Player p){
-        if(players.contains(p)){
-            players.remove(p);
-            nbPlayers--;
-        }
+    String getListPlayers(){
+        String res="";
+        for(Player p: this.players) res+=p; //appel a p.toString()
+        return res;
     }
     
     //TODO: verifier si c'est bien ca qu'il faut retourner (ip=225.10.12.4#### par exemple)
@@ -75,6 +76,7 @@ public class Game{
         return this.portMultiD;
     }
 
+    /* GENERATION DU LABYRINTHE */
     void generateMaze(){
         int height=(int)(Math.random()*20)+10;
         int width=(int)(Math.random()*20)+10;
@@ -112,13 +114,116 @@ public class Game{
             }
         }
     }
-    
-    //la partie commence
-    void gameStart(){
-        onGoing=true;
-        nbGhostsRemain=(int)(Math.random()*nbPlayers)+nbPlayers+1;
+
+    /* AVANT QU'UNE PARTIE COMMENCE */
+    synchronized void addPlayerInGame(Player p){
+        int row, col;
+        do{
+            row=(int)(Math.random()*getHeight());
+            col=(int)(Math.random()*getWidth());
+        }
+        while(maze[row][col].isWall() || maze[row][col].havePlayer());
+        this.maze[row][col].addPlayer();
+        p.initializePosition(row, col);
+        
+        this.players.add(p);
+        this.nbPlayers++;
     }
 
+    synchronized void removePlayerFromGame(Player p){
+        if(players.contains(p)){
+            this.maze[p.getRow()][p.getCol()].removePlayer();
+            p.initializePosition(-1, -1);
+            
+            this.players.remove(p);
+            this.nbPlayers--;
+        }
+    }
+    
+    boolean canStart(){
+        for(Player p: this.players)
+            if(!p.sentStart()) return false;
+        return true;
+    }
+    
+    /* LA PARTIE COMMENCE */
+    void gameStart(){
+        onGoing=true;
+        nbGhostsRemain=((int)(Math.random()*nbPlayers))+nbPlayers+1;
+        generateGhosts();
+        this.view=new View(this);
+    }
+    
+    void generateGhosts(){
+        int row, col;
+        Ghost ghost;
+        for(int i=0; i<this.nbGhostsRemain; i++){
+            do{
+                row=(int)(Math.random()*this.getHeight());
+                col=(int)(Math.random()*this.getWidth());
+            }
+            while(maze[row][col].isWall() || maze[row][col].havePlayer());
+            ghost=new Ghost(row, col, (int)(Math.random()*5)+1);
+            maze[row][col].addGhost(ghost);
+            ghosts.add(ghost);
+        }
+    }
+    
+    /* FONCTIONS DE DEPLACEMENT */
+    //principe : si la prochaine case est un mur, player s'arrete a la case actuelle
+    void moveUp(Player p, int nbStep){
+        int row=p.getRow(), col=p.getCol();
+        System.out.println(row+" "+col);
+        while(nbStep-->0 && row>0 && !maze[row-1][col].isWall()){
+            System.out.println("in");
+            removePlayer(row, col);
+            row=p.moveUp();
+            addPlayer(row, col);
+        }
+        System.out.println(row+" "+col);
+    }
+    
+    void moveRight(Player p, int nbStep){
+        int row=p.getRow(), col=p.getCol();
+        while(nbStep-->0 && col<maze[0].length-1 && !maze[row][col+1].isWall()){
+            removePlayer(row, col);
+            col=p.moveRight();
+            addPlayer(row, col);
+        }
+    }
+    
+    void moveDown(Player p, int nbStep){
+        int row=p.getRow(), col=p.getCol();
+        while(nbStep-->0 && row<maze.length-1 && !maze[row+1][col].isWall()){
+            removePlayer(row, col);
+            row=p.moveDown();
+            addPlayer(row, col);
+        }
+    }
+    
+    void moveLeft(Player p, int nbStep){
+        int row=p.getRow(), col=p.getCol();
+        while(nbStep-->0 && col>0 && !maze[row][col-1].isWall()){
+            removePlayer(row, col);
+            col=p.moveLeft();
+            addPlayer(row, col);
+        }
+    }
+    
+    //TODO: eventuellement rajouter player en argument pour la vue des items ?
+    void removePlayer(int row, int col){
+        maze[row][col].removePlayer();
+        view.refresh(row, col, maze[row][col].getColor());
+    }
+    
+    //TODO: idem que pour removePlayerFromGame ?
+    void addPlayer(int row, int col){
+        maze[row][col].addPlayer();
+        view.refresh(row, col, maze[row][col].getColor());
+    }
+    /* FIN FONCTIONS DE DEPLACEMENT */
+
+    
     //TODO:
     /* FONCTIONS DE DEROULEMENT DE JEU */
 

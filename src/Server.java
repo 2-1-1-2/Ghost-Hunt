@@ -67,7 +67,7 @@ public class Server{
     //ajout du joueur suite a REGIS
     synchronized static Game addInGame(Player p, int numGame){
         Game g=games.get(numGame);
-        g.addPlayer(p);
+        g.addPlayerInGame(p);
         return g;
     }
 
@@ -101,10 +101,7 @@ public class Server{
 
     //tester si tous les joueurs ont envoye START
     synchronized static boolean canStart(int numGame){
-        for(Player p: games.get(numGame).getListPlayers()){
-            if(!p.sentStart()) return false;
-        }
-        return true;
+        return games.get(numGame).canStart();
     }
 
     //premiere fonction a executer, quand le joueur se connecte
@@ -129,8 +126,7 @@ public class Server{
     synchronized static String listPlayers(int numGame){
         Game g=games.get(numGame);
         String toSend="LIST! "+(byte)numGame+" "+(byte)(g.getNbPlayers())+"***";
-        for(Player p: g.getListPlayers())
-            toSend+=p;//appel a p.toString()
+        toSend+=g.getListPlayers();
         return toSend;
     }
     /* FIN FONCTIONS D'INFORMATION */
