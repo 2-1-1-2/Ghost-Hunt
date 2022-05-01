@@ -1,7 +1,7 @@
 public class Player{
+    private String username;//"id" dans le sujet
     private int score=0, nbGhostCaught=0;//le deuxieme a voir si c'est utile
     private int row=-1, col=-1;
-    private String username;//"id" dans le sujet
     private boolean startOk=false;
     private Item item=null;
 
@@ -11,6 +11,10 @@ public class Player{
 
     public String toStrinG(){
         return "PLAYR "+username+"***";
+    }
+    
+    String getID(){
+        return this.username;
     }
 
     /* AVANT QUE LA PARTIE COMMENCE */

@@ -151,7 +151,7 @@ public class Game{
         onGoing=true;
         nbGhostsRemain=((int)(Math.random()*nbPlayers))+nbPlayers+1;
         generateGhosts();
-        this.view=new View(this);
+        this.view=new View(this, this.getHeight(), this.getWidth());
     }
     
     void generateGhosts(){
@@ -172,18 +172,18 @@ public class Game{
     /* FONCTIONS DE DEPLACEMENT */
     //principe : si la prochaine case est un mur, player s'arrete a la case actuelle
     void moveUp(Player p, int nbStep){
+        //view.addText(p.getID()+" try to move up "+nbStep);
+        view.addText(p.getID()+" try to move up "+nbStep);
         int row=p.getRow(), col=p.getCol();
-        System.out.println(row+" "+col);
         while(nbStep-->0 && row>0 && !maze[row-1][col].isWall()){
-            System.out.println("in");
             removePlayer(row, col);
             row=p.moveUp();
             addPlayer(row, col);
         }
-        System.out.println(row+" "+col);
     }
     
     void moveRight(Player p, int nbStep){
+        view.addText(p.getID()+" try to move right "+nbStep);
         int row=p.getRow(), col=p.getCol();
         while(nbStep-->0 && col<maze[0].length-1 && !maze[row][col+1].isWall()){
             removePlayer(row, col);
@@ -193,6 +193,7 @@ public class Game{
     }
     
     void moveDown(Player p, int nbStep){
+        view.addText(p.getID()+" try to move down "+nbStep);
         int row=p.getRow(), col=p.getCol();
         while(nbStep-->0 && row<maze.length-1 && !maze[row+1][col].isWall()){
             removePlayer(row, col);
@@ -202,6 +203,7 @@ public class Game{
     }
     
     void moveLeft(Player p, int nbStep){
+        view.addText(p.getID()+" try to move left "+nbStep);
         int row=p.getRow(), col=p.getCol();
         while(nbStep-->0 && col>0 && !maze[row][col-1].isWall()){
             removePlayer(row, col);
@@ -213,13 +215,13 @@ public class Game{
     //TODO: eventuellement rajouter player en argument pour la vue des items ?
     void removePlayer(int row, int col){
         maze[row][col].removePlayer();
-        view.refresh(row, col, maze[row][col].getColor());
+        view.refreshMaze(row, col, maze[row][col].getColor());
     }
     
     //TODO: idem que pour removePlayerFromGame ?
     void addPlayer(int row, int col){
         maze[row][col].addPlayer();
-        view.refresh(row, col, maze[row][col].getColor());
+        view.refreshMaze(row, col, maze[row][col].getColor());
     }
     /* FIN FONCTIONS DE DEPLACEMENT */
 
