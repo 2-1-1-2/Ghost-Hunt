@@ -1,6 +1,9 @@
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,7 +29,8 @@ public class View extends JFrame{
         JScrollPane scrollP=new JScrollPane(chatPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollP.getVerticalScrollBar().setUnitIncrement(12);//vitesse de scroll
+        scrollP.getVerticalScrollBar().setUnitIncrement(12);
+        scrollP.setBorder(BorderFactory.createLineBorder(new Color(122, 195, 225), 3));
         this.add(scrollP);
         
         //calcul la taille de la fenetre en fonction de celle du labyrinthe
@@ -80,16 +84,18 @@ public class View extends JFrame{
     
     /* FONCTIONS DE DESSIN DU CHAT BOX */
     class ChatPanel extends JPanel{
-        JLabel chatHistory=new JLabel("<html></html>");
+        String entete="<html> --> ";
+        JLabel chatHistory=new JLabel(entete+"</html>");
         boolean bottom=false;
         
         ChatPanel(){
             super(new FlowLayout(0, 5, 3));
+            this.chatHistory.setFont(new Font("Times new roman", Font.BOLD, 14));
             this.add(chatHistory);
         }
         
         void addText(String text){
-            chatHistory.setText("<html>"+text+"<br>"+chatHistory.getText().substring(6));
+            chatHistory.setText(entete+text+"<br>"+chatHistory.getText().substring(entete.length()));
             this.repaint();
         }
     }
