@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "client_fonction_tcp.h": "c",
+        "inet.h": "c"
+    }
+}
