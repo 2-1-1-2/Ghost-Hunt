@@ -122,8 +122,8 @@ public class Game{
             row=(int)(Math.random()*getHeight());
             col=(int)(Math.random()*getWidth());
         }
-        while(maze[row][col].isWall() || maze[row][col].havePlayer());
-        this.maze[row][col].addPlayer();
+        while(maze[row][col].isWall() || maze[row][col].hasPlayer());
+        this.maze[row][col].addPlayer(p);
         p.initializePosition(row, col);
         
         this.players.add(p);
@@ -132,7 +132,7 @@ public class Game{
 
     synchronized void removePlayerFromGame(Player p){
         if(players.contains(p)){
-            this.maze[p.getRow()][p.getCol()].removePlayer();
+            this.maze[p.getRow()][p.getCol()].removePlayer(p);
             p.initializePosition(-1, -1);
             
             this.players.remove(p);
@@ -151,6 +151,7 @@ public class Game{
         onGoing=true;
         nbGhostsRemain=((int)(Math.random()*nbPlayers))+nbPlayers+1;
         generateGhosts();
+        generateItems();
         this.view=new View(this, this.getHeight(), this.getWidth());
     }
     
@@ -162,65 +163,104 @@ public class Game{
                 row=(int)(Math.random()*this.getHeight());
                 col=(int)(Math.random()*this.getWidth());
             }
-            while(maze[row][col].isWall() || maze[row][col].havePlayer());
-            ghost=new Ghost(row, col, (int)(Math.random()*5)+1);
-            maze[row][col].addGhost(ghost);
+            while(maze[row][col].isWall() || maze[row][col].hasPlayer());
+            ghost=new Ghost(row, col, (int)(Math.random()*5)+1, this);
+            maze[row][col].setGhost(ghost);
             ghosts.add(ghost);
+            new Thread(ghost).start(); //pour automatiser le deplacement des ghosts
+        }
+    }
+    
+    void generateItems(){
+        int row, col;
+        Item item;
+        for(int i=0; i<3; i++){ //un item de chaque par jeu
+            do{
+                row=(int)(Math.random()*this.getHeight());
+                col=(int)(Math.random()*this.getWidth());
+            }
+            while(maze[row][col].isWall() || maze[row][col].hasPlayer());
+            item=new Item(i);
+            maze[row][col].dropItem(item);
         }
     }
     
     /* FONCTIONS DE DEPLACEMENT */
     //principe : si la prochaine case est un mur, player s'arrete a la case actuelle
-    void moveUp(Player p, int nbStep){
-        //view.addText(p.getID()+" try to move up "+nbStep);
+    boolean[] moveUp(Player p, int nbStep){
         view.addText(p.getID()+" try to move up "+nbStep);
         int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
+        boolean[] tmp;
         while(nbStep-->0 && row>0 && !maze[row-1][col].isWall()){
-            removePlayer(row, col);
+            removePlayer(p, row, col);
             row=p.moveUp();
-            addPlayer(row, col);
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
         }
+        return treateResMove(get, p);
     }
     
-    void moveRight(Player p, int nbStep){
+    boolean[] moveRight(Player p, int nbStep){
         view.addText(p.getID()+" try to move right "+nbStep);
         int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
+        boolean[] tmp;
         while(nbStep-->0 && col<maze[0].length-1 && !maze[row][col+1].isWall()){
-            removePlayer(row, col);
+            removePlayer(p, row, col);
             col=p.moveRight();
-            addPlayer(row, col);
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
         }
+        return treateResMove(get, p);
     }
     
-    void moveDown(Player p, int nbStep){
+    boolean[] moveDown(Player p, int nbStep){
         view.addText(p.getID()+" try to move down "+nbStep);
         int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
+        boolean[] tmp;
         while(nbStep-->0 && row<maze.length-1 && !maze[row+1][col].isWall()){
-            removePlayer(row, col);
+            removePlayer(p, row, col);
             row=p.moveDown();
-            addPlayer(row, col);
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
         }
+        return treateResMove(get, p);
     }
     
-    void moveLeft(Player p, int nbStep){
+    boolean[] moveLeft(Player p, int nbStep){
         view.addText(p.getID()+" try to move left "+nbStep);
         int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
+        boolean[] tmp;
         while(nbStep-->0 && col>0 && !maze[row][col-1].isWall()){
-            removePlayer(row, col);
+            removePlayer(p, row, col);
             col=p.moveLeft();
-            addPlayer(row, col);
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
         }
+        return treateResMove(get, p);
     }
     
-    //TODO: eventuellement rajouter player en argument pour la vue des items ?
-    void removePlayer(int row, int col){
-        maze[row][col].removePlayer();
+    boolean[] treateResMove(boolean[] get, Player p){
+        if(get[0]) view.addText(p.getID()+" caught ghost(s)");
+        if(get[1]) view.addText(p.getID()+" got an item");
+        if(get[2]){
+            view.addText(p.getID()+" attacked player(s)");
+            generateBombe();
+        }
+        return get;
+    }
+    
+    boolean[] addPlayer(Player p, int row, int col){
+        boolean[] res=maze[row][col].addPlayer(p);
         view.refreshMaze(row, col, maze[row][col].getColor());
+        return res;
     }
     
-    //TODO: idem que pour removePlayerFromGame ?
-    void addPlayer(int row, int col){
-        maze[row][col].addPlayer();
+    void removePlayer(Player p, int row, int col){
+        maze[row][col].removePlayer(p);
         view.refreshMaze(row, col, maze[row][col].getColor());
     }
     /* FIN FONCTIONS DE DEPLACEMENT */
@@ -228,6 +268,61 @@ public class Game{
     
     //TODO:
     /* FONCTIONS DE DEROULEMENT DE JEU */
-
+    void dropItem(Item item, int row, int col){
+        this.maze[row][col].dropItem(item);
+    }
+    
+    void generateBombe(){
+        int row, col;
+        do{
+            row=(int)(Math.random()*this.getHeight());
+            col=(int)(Math.random()*this.getWidth());
+        }
+        while(maze[row][col].isWall() || maze[row][col].hasPlayer());
+        maze[row][col].dropItem(new Item(0));
+    }
+    
+    String useItem(Player p){
+        if(p.noItem() || p.hasBombe()) return "";
+        if(p.hasLampe()) return useLampe(p.getRow(), p.getCol());
+        return useRadar(p.getRow(), p.getCol());
+    }
+    
+    String useLampe(int row, int col){
+        String res="";
+        if(maze[row-1][col].isWall()) res+="MURUP***";
+        if(maze[row+1][col].isWall()) res+="MURDO***";
+        if(maze[row][col-1].isWall()) res+="MURLE***";
+        if(maze[row][col+1].isWall()) res+="MURRI***";
+        return res;
+    }
+    
+    String useRadar(int row, int col){
+        //TODO: arranger octets
+        String res="";
+        for(int i=row-2; i<row+3; i++)
+            for(int j=col-2; j<col+3; j++)
+                if(maze[i][j].hasGhost()) res+="FNDGH "+i+" "+j+"***";
+        return res;
+    }
+    
+    synchronized boolean notValidForGhost(int row, int col){
+        return maze[row][col].isWall() || maze[row][col].hasPlayer() || maze[row][col].hasGhost();
+    }
+    
+    synchronized void moveGhost(Ghost ghost, int row, int col, int nRow, int nCol){
+        maze[row][col].removeGhost();
+        maze[nRow][nCol].setGhost(ghost);
+    }
+    
+    synchronized void diffuse(String message){
+        //TODO: multi-diffuse message
+        
+    }
+    
+    void gameEnd(){
+        //TODO: tous les ghosts ont ete attrapes
+        
+    }
     /* FIN FONCTIONS DE JEU */
 }

@@ -17,12 +17,15 @@ OK SIZE? game.numGame***
 OK LIST? game.numGame***
 X GAME?***
 
-X UPMOV nbPas***
-X RIMOV nbPas***
-X DOMOV nbPas***
-X LEMOV nbPas***
+OK UPMOV nbPas***
+OK RIMOV nbPas***
+OK DOMOV nbPas***
+OK LEMOV nbPas***
 
 X IQUIT***
+
+OK DRPIT***
+OK CHKIT***
 
 X GLIS?***
 
@@ -39,6 +42,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     private Player player=null;//a instancier seulement si le client s'inscrit ou cree une partie
     private int port;
     private Game game=null;
+    private boolean extensionActived; //TODO: "ACTEX***" et "CLOEX***"
     
     public ServiceClient(Socket socket) throws IOException{
         this.sock=socket;
@@ -119,7 +123,13 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
 
     void parseGameCommand(){
-
+        //UPMOV nbPas***
+        //RIMOV nbPas***
+        //DOMOV nbPas***
+        //LEMOV nbPas***
+        //IQUIT***
+        //DRPIT***
+        //CHKIT***
     }
     /* FIN FONCTIONS PRINCIPALES DE TRAITEMENT DES REQUETES */
 
@@ -195,20 +205,53 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     /* TRAITEMENT DES COMMANDES LORS D'UNE PARTIE */
     void moveUp(int nbStep){
-        this.game.moveUp(this.player, nbStep);
+        writer.print(moveRes(game.moveUp(player, nbStep)));
+        writer.flush();
     }
     
     void moveRight(int nbStep){
-        this.game.moveRight(this.player, nbStep);
+        writer.print(moveRes(game.moveRight(player, nbStep)));
+        writer.flush();
     }
     
     void moveDown(int nbStep){
-        this.game.moveDown(this.player, nbStep);
+        writer.print(moveRes(game.moveDown(player, nbStep)));
+        writer.flush();
     }
     
     void moveLeft(int nbStep){
-        this.game.moveLeft(this.player, nbStep);
+        writer.print(moveRes(game.moveLeft(player, nbStep)));
+        writer.flush();
     }
+    
+    //TODO: arranger la reponse en bytes
+    String moveRes(boolean[] get){
+        String res=(extensionActived && get[1])?"GETIT***":"";
+        if(extensionActived){
+            if(get[2]) res+="ATKPL***";
+            res+=game.useItem(player);
+        }
+        if(get[0]) return "MOVEF "+player.getRow()+" "+player.getCol()+" "+player.getScore()+"***"+res;
+        else return "MOVE! "+player.getRow()+" "+player.getCol()+"***"+res;
+    }
+    
+    void dropItem(){
+        Item item=player.dropItem();
+        if(item!=null){
+            this.game.dropItem(item, player.getRow(), player.getCol());
+            if(extensionActived) writer.print("DRPOK***");
+        }
+        else if(extensionActived) writer.print("NOITM***");
+        if(extensionActived) writer.flush();
+    }
+    
+    void checkItem(){
+        if(extensionActived){
+            writer.print(player.checkItem());
+            writer.flush();
+        }
+    }
+    
     
     void quit(){
         //TODO: envoyer gobye et supprimer le client de la partie
