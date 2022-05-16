@@ -8,8 +8,8 @@ import java.util.Scanner;
 
 /*
 TODO:
-OK NEWPL id port***
-OK REGIS id port game.numGame***
+OK NEWPL id portUDP***
+OK REGIS id portUDP game.numGame***
 
 X START***
 X UNREG***
@@ -40,7 +40,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     private BufferedReader reader;
     private PrintWriter writer;
     private Player player=null;//a instancier seulement si le client s'inscrit ou cree une partie
-    private int port;
+    private int portUDP;
     private Game game=null;
     private boolean extensionActived; //TODO: "ACTEX***" et "CLOEX***"
     
@@ -66,7 +66,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     int getPort(){
-        return this.port;
+        return this.portUDP;
     }
 
     /* FONCTIONS PRINCIPALES DE TRAITEMENT DES REQUETES */
@@ -75,6 +75,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         //TODO: lire sur reader et appeler l'une des 
         //methodes traitement des reponses
         //char[] reading=new char[1];
+        //TODO: changer le while et le read()
         char reading;
         int nbStars=0;
         String msg="";
@@ -97,10 +98,9 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             if(!Server.idOk(this.id)) dunno();
             else{
                 this.player=new Player(id);
-                this.port=Integer.valueOf(sc.next().substring(0, 4));
-                createGame(this.port);
+                this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
+                createGame();
             }
-            
         }
         else if(type.contains("REGIS")){
             //TODO: sortir la condition du joueur existant et le mettre juste apres avoir obtenu String type ?
@@ -109,12 +109,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
                 if(!Server.idOk(this.id)) dunno();
                 else{
                     this.player=new Player(id);
-                    this.port=Integer.valueOf(sc.next().substring(0, 4));
+                    this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
                 }
             }
             else 
                 for(int i=0; i<2; i++) sc.next();//e.g si apres un UNREG et le joueur existe deja
-            register(this.port, sc.next().charAt(0));
+            register(sc.next().charAt(0));
         }
         else if(type.contains("START"))
             start();
@@ -142,12 +142,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     /* TRAITEMENT DES REPONSES AVANT LA PARTIE */
     //creer une nouvelle partie
-    void createGame(int port){
+    void createGame(){
         this.game=Server.addGame(this.player);
     }
 
     //s'inscrire a la partie no.numGame
-    void register(int port, int numGame){
+    void register(int numGame){
         if(numGame>=0 && numGame<Server.getNbGames()){
             this.game=Server.addInGame(this.player, numGame);
         }
@@ -270,6 +270,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         listGames();
 
         //COMMUNICATION AVANT LA PARTIE
+        //TODO: while problematique ?
         while(player==null || !player.sentStart()){
             try{
                 parseReplyBeforeStart();

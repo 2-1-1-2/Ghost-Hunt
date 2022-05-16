@@ -6,7 +6,7 @@ int connection(int port, const char * hote){
     
     struct addrinfo *first_info;
     struct addrinfo hints;
-    memset(&hints, 0, sizeof hints);
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     
     int r=getaddrinfo(hote,NULL,&hints,&first_info);
