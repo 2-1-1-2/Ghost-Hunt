@@ -143,6 +143,12 @@ public class Server{
                 +(byte)(g.getNbGhosts())+" "+g.getIP()+" "+g.getPort()+"***";
         return toSend;
     }
+    
+    static int getPlayerUDP(String id, Game game){
+        for(ServiceClient servC : connectedUsers)
+            if(servC.isPlayer(id, game)) return servC.getPort();
+        return -1;
+    }
 
     public static void main(String[] args){
         int portTCP=6666;//un port par defaut?

@@ -320,9 +320,10 @@ public class Game{
         
     }
     
-    void gameEnd(){
+    boolean gameIsEnd(){
         //TODO: tous les ghosts ont ete attrapes
         
+        return false;
     }
     /* FIN FONCTIONS DE JEU */
 }
