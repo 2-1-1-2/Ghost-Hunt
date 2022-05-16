@@ -71,22 +71,27 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
     /* FONCTIONS PRINCIPALES DE TRAITEMENT DES REQUETES */
     void parseReplyBeforeStart() throws IOException{
+        System.out.println("entre");
         //TODO: lire sur reader et appeler l'une des 
         //methodes traitement des reponses
-        char[] reading=new char[1];
+        //char[] reading=new char[1];
+        char reading;
         int nbStars=0;
         String msg="";
-        while(reader.read(reading, 0, 1)!=-1 && nbStars!=3){//while !vide
-            if(reading[0]=='*') nbStars++;
+        while(nbStars!=3){//while !vide
+            reading=(char)reader.read();
+            msg+=reading;
+            if(reading=='*') nbStars++;
             else nbStars=0;
-            msg+=reading[0];
+            System.out.println(msg+" "+nbStars);
             //TODO: gerer quand on pourrait avoir *** puis une suite de message encore (MALL)
             //if(nbStars==3) //enlever dans la cdt du while
         }
+        System.out.println("ok");
         Scanner sc=new Scanner(msg);
         String type=sc.next();
         //TODO:
-        if(type.equals("NEWPL")){
+        if(type.contains("NEWPL")){
             this.id=sc.next();
             System.out.println(id);
             if(!Server.idOk(this.id)) dunno();
@@ -97,7 +102,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             }
             
         }
-        else if(type.equals("REGIS")){
+        else if(type.contains("REGIS")){
             //TODO: sortir la condition du joueur existant et le mettre juste apres avoir obtenu String type ?
             if(player==null){
                 this.id=sc.next();
@@ -111,15 +116,16 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
                 for(int i=0; i<2; i++) sc.next();//e.g si apres un UNREG et le joueur existe deja
             register(this.port, sc.next().charAt(0));
         }
-        else if(type.equals("START"))
+        else if(type.contains("START"))
             start();
-        else if(type.equals("SIZE?")) 
+        else if(type.contains("SIZE?")) 
             size(sc.next().charAt(0));
-        else if(type.equals("LIST?"))
+        else if(type.contains("LIST?"))
             listPlayers(sc.next().charAt(0));
-        else if(type.equals("GAME?"))
+        else if(type.contains("GAME?"))
             listGames();
         else dunno();
+        System.out.println("fin");
     }
 
     void parseGameCommand(){
@@ -268,13 +274,18 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             try{
                 parseReplyBeforeStart();
             }
-            catch(IOException e){}
+            catch(Exception e){
+                e.printStackTrace();
+                System.err.println("while principal1");
+            }
         }
 
+        System.out.println("sorti du while main");
+
         //COMMUNICATION PENDANT LA PARTIE
-        while(true){//?
+        /*while(true){//?
             //TODO
             parseGameCommand();
-        }
+        }*/
     }
 }
