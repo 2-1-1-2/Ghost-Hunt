@@ -10,13 +10,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class View extends JFrame{
-    private Game game; //utile ?
     private MazePanel mazePanel;
     private ChatPanel chatPanel=new ChatPanel();
     
     View(Game game, int height, int width){
-        this.game=game;
-        
         this.setTitle("GhostHunt");
         this.setVisible(true);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -84,7 +81,7 @@ public class View extends JFrame{
     
     /* FONCTIONS DE DESSIN DU CHAT BOX */
     class ChatPanel extends JPanel{
-        String entete="<html> --> ";
+        String entete="<html>";
         JLabel chatHistory=new JLabel(entete+"</html>");
         boolean bottom=false;
         
@@ -94,13 +91,13 @@ public class View extends JFrame{
             this.add(chatHistory);
         }
         
-        void addText(String text){
-            chatHistory.setText(entete+text+"<br>"+chatHistory.getText().substring(entete.length()));
+        void addText(String text, String color){
+            chatHistory.setText(entete+"<p style=\"color:"+color+";\">"+text+"</p>"+chatHistory.getText().substring(entete.length()));
             this.repaint();
         }
     }
     
-    synchronized void addText(String text){
-        this.chatPanel.addText(text);
+    synchronized void addText(String text, String color){
+        this.chatPanel.addText(text, color);
     }
 }

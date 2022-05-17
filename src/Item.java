@@ -1,5 +1,4 @@
 public class Item{
-    //TODO: augmenter la liste d'items 
     private int type; //0=bombe ; 1=lampe ; 2=radar
 
     Item(int type){
@@ -25,10 +24,5 @@ public class Item{
             case 2: return "RADAR***";
             default: return "NOITM***";
         }
-    }
-    
-    //TODO: arranger les octets de la reponse
-    void useBombeOn(Player p){
-        p.loseGhost();
     }
 }

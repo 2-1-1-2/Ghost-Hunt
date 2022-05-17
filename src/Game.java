@@ -4,19 +4,16 @@ import java.util.LinkedList;
 public class Game{
     private int numGame;
     private boolean onGoing=false;
+    private View view=null;
+    //TODO: mettre tous les messages envoyes/recus dans chatbox
+        //black pour player, blue pour ghost, red pour item
     
     private Case[][] maze;
-    
     private LinkedList<Ghost> ghosts=new LinkedList<Ghost>();
-    private int nbGhostsRemain;
-    
     private LinkedList<Player> players=new LinkedList<Player>();
-    private int nbPlayers=0;
     
     private InetSocketAddress addressMultiD;
     private int portMultiD;
-    
-    private View view=null;
 
     Game(Player creator){
         Server.incGames();
@@ -33,6 +30,10 @@ public class Game{
     
     int getNum(){
         return numGame;
+    }
+    
+    boolean isOnGoing(){
+        return this.onGoing;
     }
 
     int getWidth(){
@@ -52,16 +53,22 @@ public class Game{
     }
     
     int getNbGhosts(){
-        return this.nbGhostsRemain;
+        return this.ghosts.size();
     }
 
     int getNbPlayers(){
-        return nbPlayers;
+        return this.players.size();
     }
 
     String getListPlayers(){
         String res="";
         for(Player p: this.players) res+=p; //appel a p.toString()
+        return res;
+    }
+    
+    String listPlayersCurrent(){
+        String res="GLIS! "+(byte)this.getNbPlayers();
+        for(Player p: players) res+="GPLYR "+p.currentInfo(true);
         return res;
     }
     
@@ -76,7 +83,7 @@ public class Game{
         return this.portMultiD;
     }
 
-    /* GENERATION DU LABYRINTHE */
+    /* GENERATION DU LABYRINTHE ET DE SES COMPOSANTES */
     void generateMaze(){
         int height=(int)(Math.random()*20)+10;
         int width=(int)(Math.random()*20)+10;
@@ -114,51 +121,11 @@ public class Game{
             }
         }
     }
-
-    /* AVANT QU'UNE PARTIE COMMENCE */
-    synchronized void addPlayerInGame(Player p){
-        int row, col;
-        do{
-            row=(int)(Math.random()*getHeight());
-            col=(int)(Math.random()*getWidth());
-        }
-        while(maze[row][col].isWall() || maze[row][col].hasPlayer());
-        this.maze[row][col].addPlayer(p);
-        p.initialize(row, col);
-        
-        this.players.add(p);
-        this.nbPlayers++;
-    }
-
-    synchronized void removePlayerFromGame(Player p){
-        if(players.contains(p)){
-            this.maze[p.getRow()][p.getCol()].removePlayer(p);
-            p.initialize(-1, -1); //TODO: utile ? initialise deja dans addPlayerInGame
-            
-            this.players.remove(p);
-            this.nbPlayers--;
-        }
-    }
     
-    boolean canStart(){
-        for(Player p: this.players)
-            if(!p.sentStart()) return false;
-        return true;
-    }
-    
-    /* LA PARTIE COMMENCE */
-    void gameStart(){
-        onGoing=true;
-        nbGhostsRemain=((int)(Math.random()*nbPlayers))+nbPlayers+1;
-        generateGhosts();
-        generateItems();
-        this.view=new View(this, this.getHeight(), this.getWidth());
-    }
-    
-    void generateGhosts(){
+    void generateGhosts(int nbGhosts){
         int row, col;
         Ghost ghost;
-        for(int i=0; i<this.nbGhostsRemain; i++){
+        for(int i=0; i<nbGhosts; i++){
             do{
                 row=(int)(Math.random()*this.getHeight());
                 col=(int)(Math.random()*this.getWidth());
@@ -185,93 +152,6 @@ public class Game{
         }
     }
     
-    /* FONCTIONS DE DEPLACEMENT */
-    //principe : si la prochaine case est un mur, player s'arrete a la case actuelle
-    boolean[] moveUp(Player p, int nbStep){
-        view.addText(p.getID()+" try to move up "+nbStep);
-        int row=p.getRow(), col=p.getCol();
-        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
-        boolean[] tmp;
-        while(nbStep-->0 && row>0 && !maze[row-1][col].isWall()){
-            removePlayer(p, row, col);
-            row=p.moveUp();
-            tmp=addPlayer(p, row, col);
-            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
-        }
-        return treateResMove(get, p);
-    }
-    
-    boolean[] moveRight(Player p, int nbStep){
-        view.addText(p.getID()+" try to move right "+nbStep);
-        int row=p.getRow(), col=p.getCol();
-        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
-        boolean[] tmp;
-        while(nbStep-->0 && col<maze[0].length-1 && !maze[row][col+1].isWall()){
-            removePlayer(p, row, col);
-            col=p.moveRight();
-            tmp=addPlayer(p, row, col);
-            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
-        }
-        return treateResMove(get, p);
-    }
-    
-    boolean[] moveDown(Player p, int nbStep){
-        view.addText(p.getID()+" try to move down "+nbStep);
-        int row=p.getRow(), col=p.getCol();
-        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
-        boolean[] tmp;
-        while(nbStep-->0 && row<maze.length-1 && !maze[row+1][col].isWall()){
-            removePlayer(p, row, col);
-            row=p.moveDown();
-            tmp=addPlayer(p, row, col);
-            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
-        }
-        return treateResMove(get, p);
-    }
-    
-    boolean[] moveLeft(Player p, int nbStep){
-        view.addText(p.getID()+" try to move left "+nbStep);
-        int row=p.getRow(), col=p.getCol();
-        boolean[] get=new boolean[3]; //0=getGhost ; 1=getItem
-        boolean[] tmp;
-        while(nbStep-->0 && col>0 && !maze[row][col-1].isWall()){
-            removePlayer(p, row, col);
-            col=p.moveLeft();
-            tmp=addPlayer(p, row, col);
-            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
-        }
-        return treateResMove(get, p);
-    }
-    
-    boolean[] treateResMove(boolean[] get, Player p){
-        if(get[0]) view.addText(p.getID()+" caught ghost(s)");
-        if(get[1]) view.addText(p.getID()+" got an item");
-        if(get[2]){
-            view.addText(p.getID()+" attacked player(s)");
-            generateBombe();
-        }
-        return get;
-    }
-    
-    boolean[] addPlayer(Player p, int row, int col){
-        boolean[] res=maze[row][col].addPlayer(p);
-        view.refreshMaze(row, col, maze[row][col].getColor());
-        return res;
-    }
-    
-    void removePlayer(Player p, int row, int col){
-        maze[row][col].removePlayer(p);
-        view.refreshMaze(row, col, maze[row][col].getColor());
-    }
-    /* FIN FONCTIONS DE DEPLACEMENT */
-
-    
-    //TODO:
-    /* FONCTIONS DE DEROULEMENT DE JEU */
-    void dropItem(Item item, int row, int col){
-        this.maze[row][col].dropItem(item);
-    }
-    
     void generateBombe(){
         int row, col;
         do{
@@ -282,10 +162,197 @@ public class Game{
         maze[row][col].dropItem(new Item(0));
     }
     
+
+    /* AVANT QU'UNE PARTIE COMMENCE */
+    synchronized void addPlayerInGame(Player p){
+        int row, col;
+        do{
+            row=(int)(Math.random()*getHeight());
+            col=(int)(Math.random()*getWidth());
+        }
+        while(maze[row][col].isWall() || maze[row][col].hasPlayer());
+        
+        this.maze[row][col].addPlayer(p);
+        p.initialize(row, col);
+        this.players.add(p);
+    }
+
+    synchronized void removePlayerFromGame(Player p){
+        this.maze[p.getRow()][p.getCol()].removePlayer(p);
+        this.players.remove(p);
+    }
+    
+    boolean canStart(){
+        for(Player p: this.players)
+            if(!p.sentStart()) return false;
+        return true;
+    }
+    
+    
+    /* LA PARTIE COMMENCE */
+    void gameStart(){
+        onGoing=true;
+        generateGhosts(((int)(Math.random()*getNbPlayers()))+getNbPlayers()+1);
+        generateItems();
+        this.view=new View(this, this.getHeight(), this.getWidth());
+    }
+    
+    
+    /* FONCTIONS DE DEPLACEMENT */
+    //principe : si la prochaine case est un mur, player s'arrete a la case actuelle
+    synchronized boolean[] moveUp(Player p, int nbStep){
+        view.addText(p.getID()+" try to move up "+nbStep, "black");
+        int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
+        while(nbStep-->0 && row>0 && !maze[row-1][col].isWall()){
+            removePlayer(p, row, col);
+            row=p.moveUp();
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
+        }
+        return get;
+    }
+    
+    synchronized boolean[] moveRight(Player p, int nbStep){
+        view.addText(p.getID()+" try to move right "+nbStep, "black");
+        int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
+        while(nbStep-->0 && col<maze[0].length-1 && !maze[row][col+1].isWall()){
+            removePlayer(p, row, col);
+            col=p.moveRight();
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
+        }
+        return get;
+    }
+    
+    synchronized boolean[] moveDown(Player p, int nbStep){
+        view.addText(p.getID()+" try to move down "+nbStep, "black");
+        int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
+        while(nbStep-->0 && row<maze.length-1 && !maze[row+1][col].isWall()){
+            removePlayer(p, row, col);
+            row=p.moveDown();
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
+        }
+        return get;
+    }
+    
+    synchronized boolean[] moveLeft(Player p, int nbStep){
+        view.addText(p.getID()+" try to move left "+nbStep, "black");
+        int row=p.getRow(), col=p.getCol();
+        boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
+        while(nbStep-->0 && col>0 && !maze[row][col-1].isWall()){
+            removePlayer(p, row, col);
+            col=p.moveLeft();
+            tmp=addPlayer(p, row, col);
+            for(int i=0; i<tmp.length; i++) get[i]|=tmp[i];
+        }
+        return get;
+    }
+    
+    //0=getGhost ; 1=getItem ; 2=attack player
+    boolean[] addPlayer(Player p, int row, int col){
+        Case c=maze[row][col];
+        boolean[] res=new boolean[3];
+        
+        //attrape le ghost s'il y en a un
+        res[0]=catchGhost(p, c);
+        
+        //prend l'item de la case, s'il existe
+        res[1]=c.getItem(p);
+        if(c.hasPlayer()){
+            //attaque avec la bombe
+            if((res[2]=!p.noItem() && p.hasBombe())) res[1]|=useBombe(p, c);
+            //vole un item aux joueurs adversaires, si possible
+            res[1]|=p.noItem() && p.stoleItem(c.stole());
+        }
+        if(res[1]) view.addText(p.getID()+" got an item", "red");
+        
+        c.addPlayer(p);
+        view.refreshMaze(row, col, c.getColor());
+        return res;
+    }
+    
+    void removePlayer(Player p, int row, int col){
+        maze[row][col].removePlayer(p);
+        view.refreshMaze(row, col, maze[row][col].getColor());
+    }
+    
+    
+    synchronized int[] moveGhost(Ghost g, int row, int col, int points){
+        int nRow, nCol, limit=0;
+        //si aucune case libre autour en 100 essaies, alors teleportation
+        do{
+            do{
+                if(limit>100) nRow=(int)(Math.random()*getWidth());
+                else nRow=(int)(Math.random()*points*2+2)+row-points;
+            }
+            while(nRow<1 || nRow>getHeight()-2);
+            do{
+                if(limit>100) nCol=(int)(Math.random()*getHeight());
+                else nCol=(int)(Math.random()*points*2+2)+col-points;
+            }
+            while(nCol<1 || nCol>getWidth()-2);
+            limit++;
+        }
+        while(notValidForGhost(nRow, nCol));
+        
+        removeGhost(row, col);
+        addGhost(g, nRow, nCol);
+        view.addText("ghost move to ("+nRow+", "+nCol+")", "blue");
+        diffuse("GHOST "+Server.intToNChar(nRow, 3)+" "+Server.intToNChar(nCol, 3)+"+++");
+        return new int[]{nRow, nCol};
+    }
+    
+    synchronized boolean notValidForGhost(int row, int col){
+        return maze[row][col].isWall() || maze[row][col].hasPlayer() || maze[row][col].hasGhost();
+    }
+    
+    void addGhost(Ghost g, int row, int col){
+        maze[row][col].setGhost(g);
+        view.refreshMaze(row, col, maze[row][col].getColor());
+    }
+    
+    void removeGhost(int row, int col){
+        maze[row][col].removeGhost();
+        view.refreshMaze(row, col, maze[row][col].getColor());
+    }
+    /* FIN FONCTIONS DE DEPLACEMENT */
+
+    
+    /* FONCTIONS DE DEROULEMENT DE JEU */
+    boolean catchGhost(Player p, Case c){
+        Ghost ghost=c.catchGhost(p);
+        if(ghost!=null){
+            this.ghosts.remove(ghost);
+            view.addText(p.getID()+" caught ghost(s)", "blue");
+            diffuse(p.currentInfoCatch());
+            if(ghosts.isEmpty()) this.onGoing=false;
+            return true;
+        }
+        return false;
+    }
+    
+    void dropItem(Item item, int row, int col){
+        this.maze[row][col].dropItem(item);
+    }
+    
     String useItem(Player p){
         if(p.noItem() || p.hasBombe()) return "";
         if(p.hasLampe()) return useLampe(p.getRow(), p.getCol());
         return useRadar(p.getRow(), p.getCol());
+    }
+    
+    boolean useBombe(Player p, Case c){
+        LinkedList<Ghost> toRemove=c.attack();
+        p.dropItem();
+        view.addText(p.getID()+" attacked player(s)", "red");
+        if(!toRemove.isEmpty())
+            for(Ghost g: toRemove) ghosts.remove(g);
+        generateBombe();
+        return c.getItem(p); //renvoie l'item de la case s'il existe
     }
     
     String useLampe(int row, int col){
@@ -298,32 +365,17 @@ public class Game{
     }
     
     String useRadar(int row, int col){
-        //TODO: arranger octets
         String res="";
-        for(int i=row-2; i<row+3; i++)
-            for(int j=col-2; j<col+3; j++)
-                if(maze[i][j].hasGhost()) res+="FNDGH "+i+" "+j+"***";
+        for(int x=row-2; x<row+3; x++)
+            for(int y=col-2; y<col+3; y++)
+                if(maze[x][y].hasGhost()) res+="FNDGH "+Server.intToNChar(x, 3)
+                                              +" "+Server.intToNChar(y, 3)+"***";
         return res;
-    }
-    
-    synchronized boolean notValidForGhost(int row, int col){
-        return maze[row][col].isWall() || maze[row][col].hasPlayer() || maze[row][col].hasGhost();
-    }
-    
-    synchronized void moveGhost(Ghost ghost, int row, int col, int nRow, int nCol){
-        maze[row][col].removeGhost();
-        maze[nRow][nCol].setGhost(ghost);
     }
     
     synchronized void diffuse(String message){
         //TODO: multi-diffuse message
         
-    }
-    
-    boolean gameIsEnd(){
-        //TODO: tous les ghosts ont ete attrapes
-        
-        return false;
     }
     /* FIN FONCTIONS DE JEU */
 }

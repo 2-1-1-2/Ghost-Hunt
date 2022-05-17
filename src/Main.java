@@ -8,20 +8,20 @@ public class Main{
         g.addPlayerInGame(p2);
         /*g.addPlayerInGame(p3);
         g.addPlayerInGame(p4);*/
-        /*g.gameStart();
+        g.gameStart();
 
         g.moveUp(p1, 50);
         g.moveRight(p1, 50);
         g.moveDown(p1, 50);
         g.moveLeft(p1, 50);
 
-        Thread.sleep(2000);
+        Thread.sleep(1500);
 
         g.moveUp(p2, 50);
         g.moveRight(p2, 50);
         g.moveDown(p2, 50);
-        Thread.sleep(2000);
-        g.moveLeft(p2, 50);*/
+        Thread.sleep(1500);
+        g.moveLeft(p2, 50);
         
         /*Ghost ghost=new Ghost(1, 1, 5, g);
         new Thread(ghost).start();

@@ -33,28 +33,9 @@ public class Ghost implements Runnable{
     }
     
     void moveGhost(){
-        int nRow, nCol, limit=0;
-        //si aucune case libre autour en 100 essaies, alors teleportation
-        do{
-            do{
-                if(limit>100) nRow=(int)(Math.random()*game.getWidth());
-                else nRow=(int)(Math.random()*points*2+2)+row-points;
-            }
-            while(nRow<0 || nRow>=game.getWidth());
-            do{
-                if(limit>100) nCol=(int)(Math.random()*game.getHeight());
-                else nCol=(int)(Math.random()*points*2+2)+col-points;
-            }
-            while(nCol<0 || nCol>=game.getHeight());
-            limit++;
-        }
-        while(game.notValidForGhost(nRow, nCol));
-        game.moveGhost(this, row, col, nRow, nCol);
-        this.row=nRow;
-        this.col=nCol;
-        //TODO: arranger octets
-        //TODO: multi-diffuse toDiffuse
-        game.diffuse("GHOST "+row+" "+col+"+++");
+        int[] newPos=game.moveGhost(this, this.row, this.col, this.points);
+        this.row=newPos[0];
+        this.col=newPos[1];
     }
     
     public void run(){

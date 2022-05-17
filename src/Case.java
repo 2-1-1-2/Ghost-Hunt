@@ -16,57 +16,44 @@ public class Case{
     }
     
     /* EN RAPPORT AVEC LE JOUEUR */
-    boolean[] addPlayer(Player p){ //0=ghost ; 1=item ; 2=bombe explosee
-        boolean[] res=new boolean[3];
-        res[1]=this.getItem(p); //recupere l'item de la case si possible
-        if(!this.hasPlayer()) res[0]=this.catchGhost(p);
-        else{
-            if((res[2]=!p.noItem() && p.hasBombe())){ //attaque avec la bombe
-                for(Player victim : this.players) p.attackPlayer(victim);
-                removeBombe(p);
-                res[1]|=this.getItem(p); //recupere l'item de la case si possible
-            }
-            if(p.noItem()) //vole l'item du premier joueur qui en a un
-                for(Player victim : players)
-                    if((res[1]|=p.stoleItem(victim.dropItem()))) break;
-        }
+    boolean hasPlayer(){
+        return !this.players.isEmpty();
+    }
+    
+    void addPlayer(Player p){
         this.players.add(p);
-        return res;
     }
     
     void removePlayer(Player p){
         this.players.remove(p);
     }
     
-    boolean hasPlayer(){
-        return !this.players.isEmpty();
-    }
-    
     
     /* EN RAPPORT AVEC LES FANTOMES */
-    void setGhost(Ghost ghost){
-        this.ghost=ghost;
-    }
-    
-    void removeGhost(){
-        this.ghost=null;
-    }
-
-    boolean catchGhost(Player p){
-        if(this.ghost==null) return false;
-        p.catchGhost(ghost);
-        removeGhost();
-        return true;
-    }
-
     boolean hasGhost(){
         return this.ghost!=null;
     }
     
+    void setGhost(Ghost ghost){
+        this.ghost=ghost;
+    }
+    
+    Ghost removeGhost(){
+        Ghost tmp=ghost;
+        this.ghost=null;
+        return tmp;
+    }
+
+    Ghost catchGhost(Player p){
+        if(this.ghost==null) return null;
+        p.catchGhost(ghost);
+        return removeGhost();
+    }
+    
     
     /* EN RAPPORT AVEC LES ITEMS */
-    void dropItem(Item item){
-        this.item=item;
+    boolean hasItem(){
+        return this.item!=null;
     }
 
     boolean getItem(Player p){
@@ -75,13 +62,27 @@ public class Case{
         return true;
     }
     
-    void removeBombe(Player p){
-        this.item=null;
-        p.removeBombe();
+    void dropItem(Item item){
+        this.item=item;
     }
 
-    boolean hasItem(){
-        return this.item!=null;
+    LinkedList<Ghost> attack(){
+        LinkedList<Ghost> res=new LinkedList<Ghost>();
+        Ghost tmp;
+        for(Player p: this.players){
+            tmp=p.loseGhost();
+            if(tmp!=null) res.add(tmp);
+        }
+        return res;
+    }
+    
+    Item stole(){
+        Item item;
+        for(Player p: players){
+            item=p.dropItem();
+            if(item!=null) return item;
+        }
+        return null;
     }
     
     

@@ -28,7 +28,7 @@ OK CLOEX*** -> closeExtension()
 OK DRPIT*** -> dropItem()
 OK CHKIT*** -> checkItem()
 
-X GLIS?*** -> listPlayersCurrent()
+OK GLIS?*** -> listPlayersCurrent()
 X MALL? message*** -> messageToAll(message)
 X SEND? player.username message*** -> sendToPlayer(username, message)
 
@@ -43,7 +43,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     private Player player=null;//a instancier seulement si le client s'inscrit ou cree une partie
     private int portUDP;
     private Game game=null;
-    private boolean extensionActived=false; //TODO: "ACTEX***" et "CLOEX***"
+    private boolean extensionActived=false;
     
     public ServiceClient(Socket socket) throws IOException{
         this.sock=socket;
@@ -75,10 +75,6 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
     /* FONCTIONS PRINCIPALES DE TRAITEMENT DES REQUETES */
     String parsing() throws IOException{
-        //TODO: lire sur reader et appeler l'une des 
-        //methodes traitement des reponses
-        //char[] reading=new char[1];
-        //TODO: changer le while et le read()
         char reading;
         int nbStars=0;
         String msg="";
@@ -133,7 +129,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void parseGameCommand(String msg) throws IOException{
         Scanner sc=new Scanner(msg);
         String type=sc.next();
-        if(game.gameIsEnd()) quit();
+        if(!game.isOnGoing()) quit();
         else if(type.equals("UPMOV")) moveUp(sc.nextInt());
         else if(type.equals("RIMOV")) moveRight(sc.nextInt());
         else if(type.equals("DOMOV")) moveDown(sc.nextInt());
@@ -161,20 +157,18 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     /* TRAITEMENT DES REPONSES AVANT LA PARTIE */
     //creer une nouvelle partie
     void createGame(){
-        this.game=Server.addGame(this.player);
+        this.game=Server.createGame(this.player);
     }
 
     //s'inscrire a la partie no.numGame
     void register(int numGame){
         if(numGame>=0 && numGame<Server.getNbGames()){
             this.game=Server.addInGame(this.player, numGame);
-            //TODO: arranger octets
-            send("REGOK "+numGame);
+            send("REGOK "+(byte)numGame);
         }
         else send("REGNO***");
     }
-        
-    //TODO: quand un joueur envoie START
+    
     //regarder la partie dans laquelle il est inscrit (=game)
     //pour voir si on peut faire appel a Server.sendWelcome()
     //si tous les joueurs sont en train de waiting, alors lancer la partie
@@ -182,7 +176,8 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void start(){
         if(this.game!=null && !this.player.sentStart()){
             this.player.setStartStatus(true);
-            if(Server.canStart(game.getNum())) send(Server.sendWelcome(game.getNum()));
+            if(Server.canStart(game.getNum()))
+                send(Server.sendWelcome(game.getNum())+"POSIT "+player.currentInfo(false));
         }
         else if(this.game==null) dunno();
         //si le joueur a deja start, on ne fait rien du tout
@@ -191,9 +186,10 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
     void unregister(){
         if(this.game!=null){
-            this.game.removePlayerFromGame(player);
+            game.removePlayerFromGame(player);
             this.game=null;
-            send("UNROK "+this.game.getNum()+"***");
+            send("UNROK "+(byte)game.getNum()+"***");
+            if(game.getNbPlayers()==0 && game.isOnGoing()) gameEnd();
         }
         else dunno();
     }
@@ -235,15 +231,19 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         send(moveRes(game.moveLeft(player, nbStep)));
     }
     
-    //TODO: arranger la reponse en bytes
     String moveRes(boolean[] get){
-        String res=(extensionActived && get[1])?"GETIT***":"";
+        String itemS=(extensionActived && get[1])?"GETIT***":"";
         if(extensionActived){
-            if(get[2]) res+="ATKPL***";
-            res+=game.useItem(player);
+            if(get[2]) itemS+="ATKPL***";
+            itemS+=game.useItem(player);
         }
-        if(get[0]) return "MOVEF "+player.getRow()+" "+player.getCol()+" "+player.getScore()+"***"+res;
-        else return "MOVE! "+player.getRow()+" "+player.getCol()+"***"+res;
+        String pos=Server.intToNChar(player.getRow(), 3)+" "+Server.intToNChar(player.getCol(), 3);
+        if(get[0]){
+            //TODO: appeler gameEnd() apres return (arg String dans gameEnd pour send ?)
+            if(!game.isOnGoing()) gameEnd();
+            return "MOVEF "+pos+" "+Server.intToNChar(player.getScore(), 4)+"***"+itemS;
+        }
+        else return "MOVE! "+pos+"***"+itemS;
     }
     
     void activeExtension(){
@@ -272,10 +272,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void listPlayersCurrent(){
-        //TODO: afficher la liste des joueurs courants dans la partie
-            //GLIS! s*** avec s=nombre de joueurs presents
-            //GPLYR id x y p***
-        
+        send(game.listPlayersCurrent());
     }
     
     void messageToAll(String msg){
@@ -304,7 +301,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         send("GOBYE");
     }
     /* FIN TRAITEMENT DES COMMANDES */
-
+    
+    
+    void gameEnd(){
+        //TODO: fermer le jeu et envoyer messages appropries
+        
+    }
     
     public void run(){
         //envoyer la liste des parties

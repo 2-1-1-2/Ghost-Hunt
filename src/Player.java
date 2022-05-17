@@ -16,6 +16,18 @@ public class Player{
         return "PLAYR "+username+"***";
     }
     
+    //username row col (score)***
+    String currentInfo(boolean withScore){
+        return username+" "+Server.intToNChar(row, 3)+" "+Server.intToNChar(col, 3)
+                +((withScore)?" "+Server.intToNChar(score, 4):"")+"***";
+    }
+    
+    //SCORE username score row col+++
+    String currentInfoCatch(){
+        return "SCORE "+username+" "+Server.intToNChar(score, 4)+" "
+            +Server.intToNChar(row, 3)+" "+Server.intToNChar(col, 3)+"+++";
+    }
+    
     String getID(){
         return this.username;
     }
@@ -33,7 +45,7 @@ public class Player{
         this.score=0;
         this.row=row;
         this.col=col;
-        this.startOk=false;
+        setStartStatus(false);
         caughtGhosts.clear();
     }
     
@@ -44,9 +56,12 @@ public class Player{
         this.caughtGhosts.add(ghost);
     }
     
-    void loseGhost(){
-        if(this.caughtGhosts.isEmpty()) return;
-        this.score-=this.caughtGhosts.remove().loseGhost(this.row, this.col);
+    //perd le premier ghost suite a une attaque
+    Ghost loseGhost(){
+        if(this.caughtGhosts.isEmpty()) return null;
+        Ghost res=caughtGhosts.remove();
+        this.score-=res.loseGhost(this.row, this.col);
+        return res;
     }
     
     
@@ -90,14 +105,6 @@ public class Player{
     
     boolean hasRadar(){
         return item.isRadar();
-    }
-    
-    void attackPlayer(Player p){
-        item.useBombeOn(p);
-    }
-    
-    void removeBombe(){
-        this.item=null;
     }
     
     
