@@ -3,7 +3,6 @@ char delim_espace[] = " ";
 char delim_stars[] = "*";
 
 int connection(int port, const char * hote){
-    
     struct addrinfo *first_info;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -46,7 +45,6 @@ int connection(int port, const char * hote){
         }
     }
     return -1;
-
 }
 
 
@@ -64,7 +62,7 @@ int reception(int sock){
     }
     */
     
-    //printf("%s\n", buf);
+    printf("server sent : %s\n", buf);
     if(strncmp(buf, "GAMES", 5) == 0){
         return games_traitement(buf, rec, sock);
 
@@ -127,11 +125,13 @@ int reception(int sock){
     return 1;
 }
 
+int envoie(int socket, const char* toSend){
+    return send(socket, toSend, strlen(toSend), 0);
+}
+
     /* ----- traitement -----*/
     //* GAMES n***                  : nombre de partie
     int games_traitement(char * mess, int taille, int sock){
-        
-
         //* GAMES n
         char * tmp = calloc(1, taille);
         sprintf(tmp, "%s", mess);
@@ -168,7 +168,7 @@ int reception(int sock){
         
         //on verifie s'il y a tout le message/nb de partie
 
-        if(strncmp(mess+taille-3, "***",3)==0 && cpt_partie == nb_games){
+        if(strncmp(mess+taille-3, "***", 3)==0 && cpt_partie == nb_games){
             printf("c'est bon\n");
         }
         else{
@@ -180,7 +180,6 @@ int reception(int sock){
             affiche_suite(sock, cpt_partie, cpt_etoile_fin, nb_games);
             
         }
-
 
         return 1;
     }
@@ -201,9 +200,11 @@ int reception(int sock){
         }
         printf("nombre compté : %d\n", cpt_partie);
 
-        if((strncmp(suite+rec-3, "***",3)==0 || (cpt_etoile_fin = 1 && strncmp(suite+rec-2, "**",2)==0) || (cpt_etoile_fin = 2 && strncmp(suite+rec-1, "*",1)==0))&& cpt_partie >= nb_games){
+        if((strncmp(suite+rec-3, "***", 3)==0
+         || (cpt_etoile_fin=1 && strncmp(suite+rec-2, "**", 2)==0)
+         || (cpt_etoile_fin=2 && strncmp(suite+rec-1, "*", 1)==0))
+         && cpt_partie >= nb_games)
             printf("c'est bon\n");
-        }
         else{
             int cpt_etoile_fin = 0;
             if(strncmp(suite+rec-3, "***",3)==0) cpt_etoile_fin = 3;

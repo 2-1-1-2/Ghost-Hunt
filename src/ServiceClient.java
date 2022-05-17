@@ -7,32 +7,32 @@ import java.net.Socket;
 import java.util.Scanner;
 
 /*
-TODO:
-OK NEWPL id portUDP***
-OK REGIS id portUDP game.numGame***
+TODO: recevoir
+OK NEWPL id portUDP*** -> createGame()
+OK REGIS id portUDP game.numGame*** -> register(numGame)
 
-OK START***
-OK UNREG***
-OK SIZE? game.numGame***
-OK LIST? game.numGame***
-OK GAME?***
+OK START*** -> start()
+OK UNREG*** -> unregister()
+OK SIZE? game.numGame*** -> sizeMaze(numGame)
+OK LIST? game.numGame*** -> listPlayers(numGame)
+OK GAME?*** -> listGames()
 
 
-OK UPMOV nbPas***
-OK RIMOV nbPas***
-OK DOMOV nbPas***
-OK LEMOV nbPas***
+OK UPMOV nbPas*** -> moveUp(nbPas)
+OK RIMOV nbPas*** -> moveRight(nbPas)
+OK DOMOV nbPas*** -> moveDown(nbPas)
+OK LEMOV nbPas*** -> moveLeft(nbPas)
 
-OK ACTEX***
-OK CLOEX***
-OK DRPIT***
-OK CHKIT***
+OK ACTEX*** -> activeExtension()
+OK CLOEX*** -> closeExtension()
+OK DRPIT*** -> dropItem()
+OK CHKIT*** -> checkItem()
 
-X GLIS?***
-X MALL? message***
-X SEND? player.username message***
+X GLIS?*** -> listPlayersCurrent()
+X MALL? message*** -> messageToAll(message)
+X SEND? player.username message*** -> sendToPlayer(username, message)
 
-X IQUIT***
+X IQUIT*** -> quit()
 */
 
 public class ServiceClient implements Runnable{//en fait, c'est une extension du Server
@@ -97,7 +97,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void parseReplyBeforeStart(String msg){
         Scanner sc=new Scanner(msg);
         String type=sc.next();
-        if(type.contains("NEWPL")){
+        if(type.equals("NEWPL")){
             this.id=sc.next();
             if(!Server.idOk(this.id)) dunno();
             else{
@@ -106,25 +106,27 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
                 createGame();
             }
         }
-        else if(type.contains("REGIS")){
+        else if(type.equals("REGIS")){
             //TODO: sortir la condition du joueur existant et le mettre juste apres avoir obtenu String type ?
             if(player==null){
                 this.id=sc.next();
-                if(!Server.idOk(this.id)) dunno();
-                else{
-                    this.player=new Player(id);
-                    this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
+                if(!Server.idOk(this.id)){
+                    dunno();
+                    return;
                 }
+                this.player=new Player(id);
+                this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
             }
             else 
+            //TODO: on peut changer d'id et de portUDP ?
                 for(int i=0; i<2; i++) sc.next();//e.g si apres un UNREG et le joueur existe deja
             register(sc.next().charAt(0));
         }
-        else if(type.contains("START")) start();
-        else if(type.contains("UNREG")) unregister();
-        else if(type.contains("SIZE?")) size(sc.next().charAt(0));
-        else if(type.contains("LIST?")) listPlayers(sc.next().charAt(0));
-        else if(type.contains("GAME?")) listGames();
+        else if(type.equals("START***")) start();
+        else if(type.equals("UNREG***")) unregister();
+        else if(type.equals("SIZE?")) sizeMaze(sc.next().charAt(0));
+        else if(type.equals("LIST?")) listPlayers(sc.next().charAt(0));
+        else if(type.equals("GAME?***")) listGames();
         else dunno();
     }
 
@@ -132,19 +134,26 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         Scanner sc=new Scanner(msg);
         String type=sc.next();
         if(game.gameIsEnd()) quit();
-        else if(type.contains("UPMOV")) moveUp(sc.nextInt());
-        else if(type.contains("RIMOV")) moveRight(sc.nextInt());
-        else if(type.contains("DOMOV")) moveDown(sc.nextInt());
-        else if(type.contains("LEMOV")) moveLeft(sc.nextInt());
-        else if(type.contains("ACTEX")) activeExtension();
-        else if(type.contains("CLOEX")) closeExtension();
-        else if(type.contains("DRPIT")) dropItem();
-        else if(type.contains("CHKIT")) checkItem();
-        else if(type.contains("GLIS?")) playersList();
-        else if(type.contains("MALL?")) messageToAll(sc.next());
-        else if(type.contains("SEND?")) sendToPlayer(sc.next(), sc.next());
-        else if(type.contains("IQUIT")) quit();
+        else if(type.equals("UPMOV")) moveUp(sc.nextInt());
+        else if(type.equals("RIMOV")) moveRight(sc.nextInt());
+        else if(type.equals("DOMOV")) moveDown(sc.nextInt());
+        else if(type.equals("LEMOV")) moveLeft(sc.nextInt());
+        
+        else if(type.equals("ACTEX***")) activeExtension();
+        else if(type.equals("CLOEX***")) closeExtension();
+        else if(type.equals("DRPIT***")) dropItem();
+        else if(type.equals("CHKIT***")) checkItem();
+        
+        else if(type.equals("GLIS?***")) listPlayersCurrent();
+        else if(type.equals("MALL?")) messageToAll(sc.next());
+        else if(type.equals("SEND?")) sendToPlayer(sc.next(), sc.next());
+        else if(type.equals("IQUIT***")) quit();
         else dunno();
+    }
+    
+    void send(String toSend){
+        writer.print(toSend);
+        writer.flush();
     }
     /* FIN FONCTIONS PRINCIPALES DE TRAITEMENT DES REQUETES */
 
@@ -157,9 +166,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
     //s'inscrire a la partie no.numGame
     void register(int numGame){
-        if(numGame>=0 && numGame<Server.getNbGames())
+        if(numGame>=0 && numGame<Server.getNbGames()){
             this.game=Server.addInGame(this.player, numGame);
-        else dunno();
+            //TODO: arranger octets
+            send("REGOK "+numGame);
+        }
+        else send("REGNO***");
     }
         
     //TODO: quand un joueur envoie START
@@ -170,73 +182,57 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void start(){
         if(this.game!=null && !this.player.sentStart()){
             this.player.setStartStatus(true);
-            if(Server.canStart(game.getNum())) Server.sendWelcome(game.getNum());
-            //TODO: Server.sendWelcome renvoie un String
+            if(Server.canStart(game.getNum())) send(Server.sendWelcome(game.getNum()));
         }
         else if(this.game==null) dunno();
         //si le joueur a deja start, on ne fait rien du tout
         //comme un "bloquage"
     }
 
-    //TODO: a appeler avec UNREG***
     void unregister(){
         if(this.game!=null){
             this.game.removePlayerFromGame(player);
             this.game=null;
+            send("UNROK "+this.game.getNum()+"***");
         }
         else dunno();
     }
 
-    void size(int numGame){
-        if(Server.gameExists(numGame)){
-            String dimensions=Server.sizeMaze(numGame);
-            writer.print(dimensions);
-            writer.flush();
-        }
+    void sizeMaze(int numGame){
+        if(Server.gameExists(numGame)) send(Server.sizeMaze(numGame));
         else dunno();
     }
 
     void listPlayers(int numGame){
-        if(Server.gameExists(numGame)){
-            String players=Server.listPlayers(numGame);
-            writer.print(players);
-            writer.flush();
-        }
+        if(Server.gameExists(numGame)) send(Server.listPlayers(numGame));
         else dunno();
     }
 
     void listGames(){
-        String games=Server.listGames();
-        writer.print(games);
-        writer.flush();
+        send(Server.listGames());
     }
 
     void dunno(){
-        writer.print("DUNNO***");
-        writer.flush();
+        send("DUNNO***");
     }
     /* FIN TRAITEMENT DES REPONSES */
     
     
     /* TRAITEMENT DES COMMANDES LORS D'UNE PARTIE */
     void moveUp(int nbStep){
-        writer.print(moveRes(game.moveUp(player, nbStep)));
-        writer.flush();
+        send(moveRes(game.moveUp(player, nbStep)));
     }
     
     void moveRight(int nbStep){
-        writer.print(moveRes(game.moveRight(player, nbStep)));
-        writer.flush();
+        send(moveRes(game.moveRight(player, nbStep)));
     }
     
     void moveDown(int nbStep){
-        writer.print(moveRes(game.moveDown(player, nbStep)));
-        writer.flush();
+        send(moveRes(game.moveDown(player, nbStep)));
     }
     
     void moveLeft(int nbStep){
-        writer.print(moveRes(game.moveLeft(player, nbStep)));
-        writer.flush();
+        send(moveRes(game.moveLeft(player, nbStep)));
     }
     
     //TODO: arranger la reponse en bytes
@@ -252,34 +248,30 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     void activeExtension(){
         this.extensionActived=true;
-        writer.print("EXTON***");
-        writer.flush();
+        send("EXTON***");
     }
     
     void closeExtension(){
         this.extensionActived=false;
-        writer.print("EXTOF***");
-        writer.flush();
+        send("EXTOF***");
     }
     
     void dropItem(){
         Item item=player.dropItem();
+        String toSend="";
         if(item!=null){
             this.game.dropItem(item, player.getRow(), player.getCol());
-            if(extensionActived) writer.print("DRPOK***");
+            if(extensionActived) toSend="DRPOK***";
         }
-        else if(extensionActived) writer.print("NOITM***");
-        if(extensionActived) writer.flush();
+        else if(extensionActived) toSend="NOITM***";
+        if(extensionActived) send(toSend);
     }
     
     void checkItem(){
-        if(extensionActived){
-            writer.print(player.checkItem());
-            writer.flush();
-        }
+        if(extensionActived) send(player.checkItem());
     }
     
-    void playersList(){
+    void listPlayersCurrent(){
         //TODO: afficher la liste des joueurs courants dans la partie
             //GLIS! s*** avec s=nombre de joueurs presents
             //GPLYR id x y p***
@@ -289,31 +281,27 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void messageToAll(String msg){
         //TODO: envoyer un message a tous les joueurs, sur le port multi-diffuse
         
-        writer.print("MALL!");
-        writer.flush();
-    }
-    
-    void sendToPlayer(String id, String msg){
-        if(getPlayerUDP(id)==-1){
-            writer.print("NSEND***");
-            writer.flush();
-            return;
-        }
-        //TODO: envoyer un message au portUDP du Player(id) 
-        
-        writer.print("SEND!***");
-        writer.flush();
+        send("MALL!");
     }
     
     int getPlayerUDP(String id){
         return Server.getPlayerUDP(id, this.game);
     }
     
+    void sendToPlayer(String id, String msg){
+        if(getPlayerUDP(id)==-1){
+            send("NSEND***");
+            return;
+        }
+        //TODO: envoyer un message au portUDP du Player(id) 
+        
+        send("SEND!***");
+    }
+    
     void quit(){
         //TODO: supprimer le client de la partie et envoyer gobye
         
-        writer.print("GOBYE");
-        writer.flush();
+        send("GOBYE");
     }
     /* FIN TRAITEMENT DES COMMANDES */
 

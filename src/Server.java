@@ -5,39 +5,49 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 /*
-TODO:
-OK GAMES nbGames***
-OK     OGAME game.numGame game.nbPlayers***
+TODO: envoyer
+OK GAMES nbGames*** -> listGames()
+OK     OGAME game.numGame game.nbPlayers*** -> listGames()
 
-X REGOK game.numGame***
-X REGNO***
+OK REGOK game.numGame*** -> register()
+OK REGNO*** -> register()
+OK UNROK game.numGame*** -> unregister()
+OK SIZE! game.numGame game.height game.width*** -> sizeMaze(numGame)
+OK LIST! game.numGame game.nbPlayers*** -> listPlayers(numGame)
+OK     PLAYR player.username*** -> listPlayers(numGame)
+OK DUNNO*** -> dunno()
 
-X UNROK game.numGame***
-OK SIZE! game.numGame game.height game.width***
-OK LIST! game.numGame game.nbPlayers***
-OK     PLAYR player.username***
-X DUNNO***
+OK WELCO g.numGame g.height g.width g.nbGhostsRemain g.ip g.portMultiD*** -> sendWelcome(numGame)
+X POSIT player.username player.row player.col*** -> 
 
-OK WELCO game.numGame game.height game.width game.nbGhostsRemain game.ip game.portMultiD***
-X POSIT player.username player.row player.col***
 
-X MOVE! player.row player.col***
-X MOVEF player.row player.col player.score***
+OK MOVE! player.row player.col*** -> moveRes()
+OK MOVEF player.row player.col player.score*** -> moveRes()
 
-X GODBYE***
+OK EXTON*** -> activeExtension()
+OK EXTOF*** -> closeExtension()
+OK GETIT*** -> moveRes()
+OK ATKPL*** -> moveRes()
+OK DRPOK*** -> dropItem()
+OK NOITM*** -> dropItem() ou checkItem()
+OK BOMBE*** -> checkItem()
+OK LAMPE*** -> checkItem()
+OK RADAR*** -> checkItem()
 
-X GLIS! game.nbPlayers***
-X     GPLYR player.username player.row player.col player.score***
+X GLIS! game.nbPlayers*** -> listPlayersCurrent()
+X     GPLYR player.username player.row player.col player.score*** -> listPlayersCurrent()
 
-X MESSA playerReceiver.username message***
-X MALL!***
-X MESSP playerSender.username message***
-X SEND!***
-X NSEND***
+X MESSA playerReceiver.username message*** -> messageToAll(message)
+X MALL!*** -> messageToAll(message)
+X MESSP playerSender.username message*** -> sendToPlayer(id, message)
+X SEND!*** -> sendToPlayer(id, message)
+OK NSEND*** -> sendToPlayer(id, message)
 
-X GHOST ghost.row ghost.col+++
-X SCORE player.username player.score player.row player.col+++
-X ENDGA playerWinner.username playerWinner.score+++
+X GHOST ghost.row ghost.col+++ -> 
+X SCORE player.username player.score player.row player.col+++ -> 
+
+X GOBYE*** -> quit()
+X ENDGA playerWinner.username playerWinner.score+++ -> 
 */
 
 public class Server{
@@ -93,9 +103,8 @@ public class Server{
     
     /* FONCTIONS D'INFORMATION SUR LES PARTIES */
     synchronized static boolean gameExists(int numGame){
-        for(Game g: games){
+        for(Game g: games)
             if(g.getNum()==numGame) return true;
-        }
         return false;
     }
 

@@ -29,9 +29,12 @@ public class Player{
         this.startOk=startOk;
     }
     
-    void initializePosition(int row, int col){
+    void initialize(int row, int col){
+        this.score=0;
         this.row=row;
         this.col=col;
+        this.startOk=false;
+        caughtGhosts.clear();
     }
     
     

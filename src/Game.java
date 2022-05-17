@@ -124,7 +124,7 @@ public class Game{
         }
         while(maze[row][col].isWall() || maze[row][col].hasPlayer());
         this.maze[row][col].addPlayer(p);
-        p.initializePosition(row, col);
+        p.initialize(row, col);
         
         this.players.add(p);
         this.nbPlayers++;
@@ -133,7 +133,7 @@ public class Game{
     synchronized void removePlayerFromGame(Player p){
         if(players.contains(p)){
             this.maze[p.getRow()][p.getCol()].removePlayer(p);
-            p.initializePosition(-1, -1);
+            p.initialize(-1, -1); //TODO: utile ? initialise deja dans addPlayerInGame
             
             this.players.remove(p);
             this.nbPlayers--;
