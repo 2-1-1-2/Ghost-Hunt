@@ -56,7 +56,7 @@ X MESSP playerSender.username message*** -> sendToPlayer(id, message)
 X SEND!*** -> sendToPlayer(id, message)
 OK NSEND*** -> sendToPlayer(id, message)
 
-X GOBYE*** -> quit()
+OK GOBYE*** -> quit()
 OK ENDGA playerWinner.username playerWinner.score+++ -> noMoreGhost()
 */
 

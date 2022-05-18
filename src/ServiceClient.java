@@ -32,7 +32,7 @@ OK GLIS?*** -> listPlayersCurrent()
 X MALL? message*** -> messageToAll(message)
 X SEND? player.username message*** -> sendToPlayer(username, message)
 
-X IQUIT*** -> quit()
+OK IQUIT*** -> quit()
 */
 
 public class ServiceClient implements Runnable{//en fait, c'est une extension du Server
@@ -319,7 +319,6 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
         //COMMUNICATION PENDANT LA PARTIE
         while(true){
-            //TODO
             try{
                 parseGameCommand(parsing());
             }
