@@ -15,19 +15,12 @@ public class Main{
         g.moveDown(p1, 50);
         g.moveLeft(p1, 50);
 
-        Thread.sleep(1500);
+        //Thread.sleep(1000);
 
         g.moveUp(p2, 50);
         g.moveRight(p2, 50);
         g.moveDown(p2, 50);
-        Thread.sleep(1500);
+        //Thread.sleep(1000);
         g.moveLeft(p2, 50);
-        
-        /*Ghost ghost=new Ghost(1, 1, 5, g);
-        new Thread(ghost).start();
-        Thread.sleep(2000);
-        System.out.println(ghost.catchGhost());
-        Thread.sleep(5000);
-        System.out.println(ghost.loseGhost(3, 3));*/
     }
 }

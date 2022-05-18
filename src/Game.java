@@ -180,6 +180,7 @@ public class Game{
     synchronized void removePlayerFromGame(Player p){
         this.maze[p.getRow()][p.getCol()].removePlayer(p);
         this.players.remove(p);
+        this.onGoing=!this.players.isEmpty();
     }
     
     boolean canStart(){
@@ -190,11 +191,12 @@ public class Game{
     
     
     /* LA PARTIE COMMENCE */
-    void gameStart(){
+    Game gameStart(){
         onGoing=true;
         generateGhosts(((int)(Math.random()*getNbPlayers()))+getNbPlayers()+1);
         generateItems();
         this.view=new View(this, this.getHeight(), this.getWidth());
+        return this;
     }
     
     
@@ -301,7 +303,7 @@ public class Game{
         
         removeGhost(row, col);
         addGhost(g, nRow, nCol);
-        view.addText("ghost move to ("+nRow+", "+nCol+")", "blue");
+        view.addText("ghost move from ("+row+", "+col+") to ("+nRow+", "+nCol+")", "blue");
         diffuse("GHOST "+Server.intToNChar(nRow, 3)+" "+Server.intToNChar(nCol, 3)+"+++");
         return new int[]{nRow, nCol};
     }
@@ -329,7 +331,7 @@ public class Game{
             this.ghosts.remove(ghost);
             view.addText(p.getID()+" caught ghost(s)", "blue");
             diffuse(p.currentInfoCatch());
-            if(ghosts.isEmpty()) this.onGoing=false;
+            this.onGoing=!this.ghosts.isEmpty();
             return true;
         }
         return false;
@@ -376,6 +378,20 @@ public class Game{
     synchronized void diffuse(String message){
         //TODO: multi-diffuse message
         
+        view.addText(message, "orange");
+    }
+    
+    //il n'y a plus de ghosts a attraper, on envoie le message qui indique le gagnant
+    void noMoreGhost(){
+        if(!this.ghosts.isEmpty()) return;
+        Player winner=players.get(0);
+        for(int i=1; i<players.size(); i++)
+            if(winner.getScore()<players.get(i).getScore()
+                || (winner.getScore()==players.get(i).getScore()
+                    && winner.getNbGhostsCaught()<players.get(i).getNbGhostsCaught()))
+                winner=players.get(i);
+        view.addText("winner is "+winner.getID()+" ("+winner.getScore()+" points and "+winner.getNbGhostsCaught()+" ghosts)", "orange");
+        diffuse("ENDGA "+winner.getID()+" "+Server.intToNChar(winner.getScore(), 4)+"+++");
     }
     /* FIN FONCTIONS DE JEU */
 }

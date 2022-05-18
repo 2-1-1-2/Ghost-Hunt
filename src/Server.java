@@ -57,7 +57,7 @@ X SEND!*** -> sendToPlayer(id, message)
 OK NSEND*** -> sendToPlayer(id, message)
 
 X GOBYE*** -> quit()
-X ENDGA playerWinner.username playerWinner.score+++ -> 
+OK ENDGA playerWinner.username playerWinner.score+++ -> noMoreGhost()
 */
 
 public class Server{
@@ -147,7 +147,7 @@ public class Server{
     
     static String sendWelcome(int numGame){
         Game g=games.get(nbGames);
-        g.gameStart();
+        games.remove(g.gameStart());
         byte[] hBytes=intToLE(g.getHeight());
         byte[] wBytes=intToLE(g.getWidth());
         return "WELCO "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+" "

@@ -31,19 +31,18 @@ public class View extends JFrame{
         this.add(scrollP);
         
         //calcul la taille de la fenetre en fonction de celle du labyrinthe
-        calculBounds(height, width, 600, scrollP);
-        this.setResizable(false);
+        calculBounds(height, width, 300, 600, scrollP);
         this.setLayout(null);
     }
     
-    void calculBounds(int height, int width, int maxS, JScrollPane scrollP){
+    void calculBounds(int height, int width, int scrollW, int maxS, JScrollPane scrollP){
         double max=(double)(width<height?height:width);
         int coeff=(int)(Math.floor((maxS-View.this.getInsets().top-View.this.getInsets().bottom)/max));
         int mazeW=width*coeff, mazeH=height*coeff;
         
         mazePanel.setBounds(0, 0, mazeW, mazeH);
-        scrollP.setBounds(mazeW, 0, 200, mazeH);
-        this.setBounds(0, 0, mazeW+200+getInsets().left+getInsets().right,
+        scrollP.setBounds(mazeW, 0, scrollW, mazeH);
+        this.setBounds(0, 0, mazeW+scrollW+getInsets().left+getInsets().right,
                              mazeH+getInsets().top+getInsets().bottom);
     }
     

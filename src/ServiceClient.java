@@ -189,7 +189,6 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             game.removePlayerFromGame(player);
             this.game=null;
             send("UNROK "+(byte)game.getNum()+"***");
-            if(game.getNbPlayers()==0 && game.isOnGoing()) gameEnd();
         }
         else dunno();
     }
@@ -217,18 +216,22 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     /* TRAITEMENT DES COMMANDES LORS D'UNE PARTIE */
     void moveUp(int nbStep){
         send(moveRes(game.moveUp(player, nbStep)));
+        game.noMoreGhost();
     }
     
     void moveRight(int nbStep){
         send(moveRes(game.moveRight(player, nbStep)));
+        game.noMoreGhost();
     }
     
     void moveDown(int nbStep){
         send(moveRes(game.moveDown(player, nbStep)));
+        game.noMoreGhost();
     }
     
     void moveLeft(int nbStep){
         send(moveRes(game.moveLeft(player, nbStep)));
+        game.noMoreGhost();
     }
     
     String moveRes(boolean[] get){
@@ -238,12 +241,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             itemS+=game.useItem(player);
         }
         String pos=Server.intToNChar(player.getRow(), 3)+" "+Server.intToNChar(player.getCol(), 3);
-        if(get[0]){
-            //TODO: appeler gameEnd() apres return (arg String dans gameEnd pour send ?)
-            if(!game.isOnGoing()) gameEnd();
-            return "MOVEF "+pos+" "+Server.intToNChar(player.getScore(), 4)+"***"+itemS;
-        }
-        else return "MOVE! "+pos+"***"+itemS;
+        return (get[0]?"MOVEF "+pos+" "+Server.intToNChar(player.getScore(), 4):"MOVE! "+pos)+"***"+itemS;
     }
     
     void activeExtension(){
@@ -296,17 +294,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void quit(){
-        //TODO: supprimer le client de la partie et envoyer gobye
-        
+        game.removePlayerFromGame(player);
         send("GOBYE");
+        this.game=null;
     }
     /* FIN TRAITEMENT DES COMMANDES */
     
-    
-    void gameEnd(){
-        //TODO: fermer le jeu et envoyer messages appropries
-        
-    }
     
     public void run(){
         //envoyer la liste des parties
