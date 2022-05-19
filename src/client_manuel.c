@@ -42,23 +42,27 @@ int communicationBeforeStart(int sock, client *infoClient){
                 res=res && readReplyREG(sock);
             }
             else if(strcmp(type, "REGIS")==0){
-                res=sendREGIS(sock, request, OP_REGIS);
+                res=sendNEWREG(sock, infoClient, request, OP_REGIS);
                 res=res && readReplyREG(sock);
             }
             else if(strcmp(type, "START")==0){
                 sentStart=1;
-                res=res && _send(sock, request);
+                res=res && _send(sock, request, strlen(request));
             }
-            else if(strcmp(type, "UNREG")==0 || strcmp(type, "GAME?")==0){
-                res=res && _send(sock, request);
-                res=res && readSimpleReply(sock);
+            else if(strcmp(type, "UNREG")==0){
+                res=res && _send(sock, request, strlen(request));
+                res=res && _read(sock);
+            }
+            else if(strcmp(type, "GAME?")==0){
+                res=res && _send(sock, request, strlen(request));
+                res=res && readReplyLists(sock, OP_LGAME);
             }
             else if(strcmp(type, "SIZE?")==0){
-                res=res && sendSIZEorLIST(sock, request, OP_SIZE_);
+                res=res && sendSIZEorLIST(sock, request, type);
                 res=res && readReplySIZE(sock);
             }
             else if(strcmp(type, "LIST?")==0){
-                res=res && sendSIZEorLIST(sock, request, OP_LLIST);
+                res=res && sendSIZEorLIST(sock, request, type);
                 res=res && readReplyLists(sock, OP_LLIST);
             }
         }
@@ -127,6 +131,9 @@ int main(int argc, char* argv[]){
     client infoClient;
     infoClient.numPartie=-1;//pas encore inscrit
     int res=communicationBeforeStart(sfd, &infoClient);
+    
+    char replyServer[100];
+    //TODO : reception du welcome et abonnement a l'adresse de multiD
     if(res!=0){//pas d'erreur, on peut continuer ?
         res=communicationGame(sfd);
     }

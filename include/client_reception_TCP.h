@@ -6,4 +6,4 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>
-
+#include "client_commons.h"
