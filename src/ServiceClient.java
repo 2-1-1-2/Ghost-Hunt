@@ -37,11 +37,13 @@ OK IQUIT*** -> quit()
 
 public class ServiceClient implements Runnable{//en fait, c'est une extension du Server
     private Socket sock;
-    private String id=null;
     private BufferedReader reader;
     private PrintWriter writer;
+    
     private Player player=null;//a instancier seulement si le client s'inscrit ou cree une partie
+    private String id=null;
     private int portUDP;
+    
     private Game game=null;
     private boolean extensionActived=false;
     
@@ -49,7 +51,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         this.sock=socket;
         this.reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.writer=new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-        Server.incClients();
+        Server.addClient(this);
     }
 
     /**
@@ -103,20 +105,12 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             }
         }
         else if(type.equals("REGIS")){
-            //TODO: sortir la condition du joueur existant et le mettre juste apres avoir obtenu String type ?
-            if(player==null){
-                this.id=sc.next();
-                if(!Server.idOk(this.id)){
-                    dunno();
-                    return;
-                }
-                this.player=new Player(id);
+            this.id=sc.next();
+            if(!Server.idOk(id)) dunno();
+            else{
                 this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
+                register(sc.next().charAt(0));
             }
-            else 
-            //TODO: on peut changer d'id et de portUDP ?
-                for(int i=0; i<2; i++) sc.next();//e.g si apres un UNREG et le joueur existe deja
-            register(sc.next().charAt(0));
         }
         else if(type.equals("START***")) start();
         else if(type.equals("UNREG***")) unregister();
@@ -163,6 +157,8 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     //s'inscrire a la partie no.numGame
     void register(int numGame){
         if(numGame>=0 && numGame<Server.getNbGames()){
+            if(player==null) this.player=new Player(id);
+            else this.player.changeID(this.id);
             this.game=Server.addInGame(this.player, numGame);
             send("REGOK "+(byte)numGame);
         }
@@ -297,6 +293,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         game.removePlayerFromGame(player);
         send("GOBYE");
         this.game=null;
+        Server.removeClient(this);
     }
     /* FIN TRAITEMENT DES COMMANDES */
     
