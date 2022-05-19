@@ -16,7 +16,6 @@ public class Game{
     private int portMultiD;
 
     Game(Player creator){
-        Server.incGames();
         this.numGame=Server.getNbGames();
         
         //creation de l'adresse de multidiffusion en fonction du nb de parties créées

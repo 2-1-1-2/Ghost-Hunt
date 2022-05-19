@@ -62,27 +62,28 @@ OK ENDGA playerWinner.username playerWinner.score+++ -> noMoreGhost()
 
 public class Server{
     private static ArrayList<Game> games=new ArrayList<Game>();
-    private static int nbGames=0;
     private static LinkedList<ServiceClient> connectedUsers=new LinkedList<ServiceClient>();
-    private static int nbClients=0;
 
-    synchronized static void incClients(){
-        nbClients++;
+    static void addClient(ServiceClient client){
+        connectedUsers.add(client);
+    }
+    
+    static void removeClient(ServiceClient client){
+        connectedUsers.remove(client);
     }
 
     synchronized static int getNbClients(){
-        return nbClients;
+        return connectedUsers.size();
     }
 
     /* FONCTIONS DE MODIF SUR LES PARTIES */
-    synchronized static void incGames(){
-        nbGames++;
+    //creation d'une nouvelle partie apres NEWPL
+    synchronized static Game createGame(Player p){
+        Game g=new Game(p);
+        games.add(g);
+        return g;
     }
-
-    synchronized static int getNbGames(){
-        return nbGames;
-    }
-
+    
     //ajout du joueur suite a REGIS
     synchronized static Game addInGame(Player p, int numGame){
         Game g=games.get(numGame);
@@ -90,11 +91,8 @@ public class Server{
         return g;
     }
 
-    //creation d'une nouvelle partie apres NEWPL
-    synchronized static Game createGame(Player p){
-        Game g=new Game(p);
-        games.add(g);
-        return g;
+    synchronized static int getNbGames(){
+        return games.size();
     }
     /* FIN FONCTIONS DE MODIF SUR LES PARTIES */
 
@@ -106,6 +104,21 @@ public class Server{
         return id.matches("[a-zA-Z0-9]{8}");
     }
     /* FIN FONCTIONS TESTS DE VALIDITE */
+    
+    
+    /* FONCTIONS DE CONVERSION */
+    //convertit un entier en un String de n char, avec des 0 au debut
+    static String intToNChar(int toConvert, int n){
+        String res=Integer.toString(toConvert);
+        while(res.length()<n) res="0"+res;
+        return res;
+    }
+    
+    //convertit un entier en little endian
+    static byte[] intToLE(int n){
+        return new byte[]{(byte)(n & 0xFF), (byte)((n>>8) & 0xFF)};
+    }
+    /* FIN FFONCTIONS DE CONVERSION */
 
     
     /* FONCTIONS D'INFORMATION SUR LES PARTIES */
@@ -122,7 +135,7 @@ public class Server{
 
     //premiere fonction a executer, quand le joueur se connecte
     synchronized static String listGames(){
-        String toSend="GAMES "+(byte)nbGames+"***";
+        String toSend="GAMES "+(byte)getNbGames()+"***";
         for(Game g: games) toSend+="OGAME "+(byte)g.getNum()+" "+(byte)g.getNbPlayers()+"***";
         return toSend;
     }
@@ -142,38 +155,23 @@ public class Server{
         toSend+=g.getListPlayers();
         return toSend;
     }
-    /* FIN FONCTIONS D'INFORMATION */
-
-    
-    static String sendWelcome(int numGame){
-        Game g=games.get(nbGames);
-        games.remove(g.gameStart());
-        byte[] hBytes=intToLE(g.getHeight());
-        byte[] wBytes=intToLE(g.getWidth());
-        return "WELCO "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+" "
-                +(byte)g.getNbGhosts()+" "+g.getIP()+" "+g.getPort()+"***";
-    }
     
     static int getPlayerUDP(String id, Game game){
         for(ServiceClient servC : connectedUsers)
             if(servC.isPlayer(id, game)) return servC.getPort();
         return -1;
     }
+    /* FIN FONCTIONS D'INFORMATION */
+
     
-    
-    /* FONCTIONS DE CONVERSION */
-    //convertit un entier en un String de n char, avec des 0 au debut
-    static String intToNChar(int toConvert, int n){
-        String res=Integer.toString(toConvert);
-        while(res.length()<n) res="0"+res;
-        return res;
+    static String sendWelcome(int numGame){
+        Game g=games.get(getNbGames());
+        games.remove(g.gameStart());
+        byte[] hBytes=intToLE(g.getHeight());
+        byte[] wBytes=intToLE(g.getWidth());
+        return "WELCO "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+" "
+                +(byte)g.getNbGhosts()+" "+g.getIP()+" "+g.getPort()+"***";
     }
-    
-    //convertit un entier en little endian
-    static byte[] intToLE(int n){
-        return new byte[]{(byte)(n & 0xFF), (byte)((n>>8) & 0xFF)};
-    }
-    /* FIN FFONCTIONS DE CONVERSION */
     
 
     public static void main(String[] args){

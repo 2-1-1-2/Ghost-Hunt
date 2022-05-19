@@ -1,35 +1,39 @@
 import java.util.LinkedList;
 
 public class Player{
-    private String username;//"id" dans le sujet
+    private String id;
     private int score=0;
     private int row=-1, col=-1;
     private boolean startOk=false;
     private LinkedList<Ghost> caughtGhosts=new LinkedList<Ghost>();
     private Item item=null;
 
-    Player(String username){
-        this.username=username;
+    Player(String id){
+        this.id=id;
+    }
+    
+    void changeID(String id){
+        this.id=id;
+    }
+    
+    String getID(){
+        return this.id;
     }
 
     public String toStrinG(){
-        return "PLAYR "+username+"***";
+        return "PLAYR "+id+"***";
     }
     
     //username row col (score)***
     String currentInfo(boolean withScore){
-        return username+" "+Server.intToNChar(row, 3)+" "+Server.intToNChar(col, 3)
+        return id+" "+Server.intToNChar(row, 3)+" "+Server.intToNChar(col, 3)
                 +((withScore)?" "+Server.intToNChar(score, 4):"")+"***";
     }
     
     //SCORE username score row col+++
     String currentInfoCatch(){
-        return "SCORE "+username+" "+Server.intToNChar(score, 4)+" "
+        return "SCORE "+id+" "+Server.intToNChar(score, 4)+" "
             +Server.intToNChar(row, 3)+" "+Server.intToNChar(col, 3)+"+++";
-    }
-    
-    String getID(){
-        return this.username;
     }
 
     /* AVANT QUE LA PARTIE COMMENCE */
