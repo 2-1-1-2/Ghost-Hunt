@@ -293,7 +293,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void messageToAll(String msg){
-        msg="MESSA "+id+" "+msg+"+++";
+        msg="MESSA "+this.id+" "+msg+"+++";
         LinkedList<ServiceClient> clients=Server.getPlayers(this.game);
         for(ServiceClient servC : clients){
             try{
@@ -310,20 +310,28 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         send("MALL!***");
     }
     
-    int getPlayerUDP(String id){
-        return Server.getPlayerUDP(id, this.game);
+    ServiceClient getServiceClient(String id){
+        return Server.getServiceClient(id, this.game);
     }
     
-    void sendToPlayer(String id, String msg){
-        if(getPlayerUDP(id)==-1){
+    void sendToPlayer(String dest, String msg){
+        ServiceClient servC=getServiceClient(dest);
+        if(servC==null){
             send("NSEND***");
             return;
         }
-        msg="MESSP "+id+" "+msg+"+++";
-        //TODO: envoyer un message au portUDP du Player(id) 
-        
-        
-        send("SEND!***");
+        msg="MESSP "+this.id+" "+msg+"+++";
+        try{
+            DatagramSocket dso=new DatagramSocket();
+            byte[] data=msg.getBytes();
+            InetSocketAddress isa=new InetSocketAddress(servC.sock.getInetAddress().getHostAddress(), servC.portUDP);
+            DatagramPacket paquet=new DatagramPacket(data, data.length, isa);
+            dso.send(paquet);
+            send("SEND!***");
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     void quit(boolean inGame){

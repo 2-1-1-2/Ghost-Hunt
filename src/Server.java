@@ -52,9 +52,9 @@ OK FNDGH x y*** -> useRadar()
 OK GLIS! game.nbPlayers*** -> listPlayersCurrent()
 OK     GPLYR player.username player.row player.col player.score*** -> listPlayersCurrent()
 
-X MESSA playerReceiver.username message*** -> messageToAll(message)
-X MALL!*** -> messageToAll(message)
-X MESSP playerSender.username message*** -> sendToPlayer(id, message)
+OK MESSA playerSender.username message*** -> messageToAll(message)
+OK MALL!*** -> messageToAll(message)
+OK MESSP playerSender.username message*** -> sendToPlayer(id, message)
 X SEND!*** -> sendToPlayer(id, message)
 OK NSEND*** -> sendToPlayer(id, message)
 
@@ -170,10 +170,10 @@ public class Server{
         return res;
     }
     
-    static int getPlayerUDP(String id, Game game){
+    static ServiceClient getServiceClient(String id, Game game){
         for(ServiceClient servC : connectedUsers)
-            if(servC.isPlayer(id, game)) return servC.getPort();
-        return -1;
+            if(servC.isPlayer(id, game)) return servC;
+        return null;
     }
     /* FIN FONCTIONS D'INFORMATION */
 

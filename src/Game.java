@@ -6,7 +6,7 @@ import java.util.LinkedList;
 public class Game{
     private int numGame;
     private boolean onGoing=false;
-    //private View view=null;
+    private View view=null;
     //TODO: mettre tous les messages envoyes/recus dans chatbox
         //black pour player, blue pour ghost, red pour item
     
@@ -86,10 +86,8 @@ public class Game{
 
     /* GENERATION DU LABYRINTHE ET DE SES COMPOSANTES */
     void generateMaze(){
-        //int height=(int)(Math.random()*20)+10;
-        int height=5;
-        //int width=(int)(Math.random()*20)+10;
-        int width=10;
+        int height=(int)(Math.random()*20)+10;
+        int width=(int)(Math.random()*20)+10;
         MazeGenerator generator=new MazeGenerator(height, width);
         
         maze=new Case[2*height+1][2*width+1];
@@ -198,7 +196,7 @@ public class Game{
         onGoing=true;
         generateGhosts(((int)(Math.random()*getNbPlayers()))+getNbPlayers()+1);
         generateItems();
-        //this.view=new View(this, this.getHeight(), this.getWidth());
+        this.view=new View(this, this.getHeight(), this.getWidth());
         return this;
     }
     
@@ -206,7 +204,7 @@ public class Game{
     /* FONCTIONS DE DEPLACEMENT */
     //principe : si la prochaine case est un mur, player s'arrete a la case actuelle
     synchronized boolean[] moveUp(Player p, int nbStep){
-        //view.addText(p.getID()+" try to move up "+nbStep, "black");
+        view.addText(p.getID()+" try to move up "+nbStep, "black");
         int row=p.getRow(), col=p.getCol();
         boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
         while(nbStep-->0 && row>0 && !maze[row-1][col].isWall()){
@@ -219,7 +217,7 @@ public class Game{
     }
     
     synchronized boolean[] moveRight(Player p, int nbStep){
-        //view.addText(p.getID()+" try to move right "+nbStep, "black");
+        view.addText(p.getID()+" try to move right "+nbStep, "black");
         int row=p.getRow(), col=p.getCol();
         boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
         while(nbStep-->0 && col<maze[0].length-1 && !maze[row][col+1].isWall()){
@@ -232,7 +230,7 @@ public class Game{
     }
     
     synchronized boolean[] moveDown(Player p, int nbStep){
-        //view.addText(p.getID()+" try to move down "+nbStep, "black");
+        view.addText(p.getID()+" try to move down "+nbStep, "black");
         int row=p.getRow(), col=p.getCol();
         boolean[] get=new boolean[3], tmp; //0=getGhost ; 1=getItem ; 2=attack player
         while(nbStep-->0 && row<maze.length-1 && !maze[row+1][col].isWall()){
@@ -273,16 +271,16 @@ public class Game{
             //vole un item aux joueurs adversaires, si possible
             res[1]|=p.noItem() && p.stoleItem(c.stole());
         }
-        //if(res[1]) view.addText(p.getID()+" got an item", "red");
+        if(res[1]) view.addText(p.getID()+" got an item", "red");
         
         c.addPlayer(p);
-        //view.refreshMaze(row, col, c.getColor());
+        view.refreshMaze(row, col, c.getColor());
         return res;
     }
     
     void removePlayer(Player p, int row, int col){
         maze[row][col].removePlayer(p);
-        //view.refreshMaze(row, col, maze[row][col].getColor());
+        view.refreshMaze(row, col, maze[row][col].getColor());
     }
     
     
@@ -306,7 +304,7 @@ public class Game{
         
         removeGhost(row, col);
         addGhost(g, nRow, nCol);
-        //view.addText("ghost move from ("+row+", "+col+") to ("+nRow+", "+nCol+")", "blue");
+        view.addText("ghost move from ("+row+", "+col+") to ("+nRow+", "+nCol+")", "blue");
         diffuse("GHOST "+Server.intToNChar(nRow, 3)+" "+Server.intToNChar(nCol, 3)+"+++");
         return new int[]{nRow, nCol};
     }
@@ -317,12 +315,12 @@ public class Game{
     
     void addGhost(Ghost g, int row, int col){
         maze[row][col].setGhost(g);
-        //view.refreshMaze(row, col, maze[row][col].getColor());
+        view.refreshMaze(row, col, maze[row][col].getColor());
     }
     
     void removeGhost(int row, int col){
         maze[row][col].removeGhost();
-        //view.refreshMaze(row, col, maze[row][col].getColor());
+        view.refreshMaze(row, col, maze[row][col].getColor());
     }
     /* FIN FONCTIONS DE DEPLACEMENT */
 
@@ -332,7 +330,7 @@ public class Game{
         Ghost ghost=c.catchGhost(p);
         if(ghost!=null){
             this.ghosts.remove(ghost);
-            //view.addText(p.getID()+" caught ghost(s)", "blue");
+            view.addText(p.getID()+" caught ghost(s)", "blue");
             diffuse(p.currentInfoCatch());
             this.onGoing=!this.ghosts.isEmpty();
             return true;
@@ -353,7 +351,7 @@ public class Game{
     boolean useBombe(Player p, Case c){
         LinkedList<Ghost> toRemove=c.attack();
         p.dropItem();
-        //view.addText(p.getID()+" attacked player(s)", "red");
+        view.addText(p.getID()+" attacked player(s)", "red");
         if(!toRemove.isEmpty())
             for(Ghost g: toRemove) ghosts.remove(g);
         generateBombe();
@@ -388,7 +386,7 @@ public class Game{
         catch(Exception e){
             e.printStackTrace();
         }
-        //view.addText(msg, "orange");
+        view.addText(msg, "orange");
     }
     
     //il n'y a plus de ghosts a attraper, on envoie le message qui indique le gagnant
@@ -400,7 +398,7 @@ public class Game{
                 || (winner.getScore()==players.get(i).getScore()
                     && winner.getNbGhostsCaught()<players.get(i).getNbGhostsCaught()))
                 winner=players.get(i);
-        //view.addText("winner is "+winner.getID()+" ("+winner.getScore()+" points and "+winner.getNbGhostsCaught()+" ghosts)", "orange");
+        view.addText("winner is "+winner.getID()+" ("+winner.getScore()+" points and "+winner.getNbGhostsCaught()+" ghosts)", "orange");
         diffuse("ENDGA "+winner.getID()+" "+Server.intToNChar(winner.getScore(), 4)+"+++");
     }
     /* FIN FONCTIONS DE JEU */
