@@ -1,4 +1,4 @@
-all: client_auto
+all: client_auto client_manuel
 
 redo: distclean all
 
@@ -11,14 +11,11 @@ client_fonction_tcp.o:
 client_auto.o :
 	gcc -c ./src/client_auto.c -I ./include
 
-client_manuel: client_manuel.o client_envoi_TCP.o client_reception_TCP.o
-	gcc -Wall -o ./src/client_manuel client_manuel.o client_envoi_TCP.o client_reception_TCP.o
+client_manuel: client_manuel.o client_commons_tcp.o 
+	gcc -Wall -o ./src/client_manuel client_manuel.o client_commons_tcp.o
 
-client_envoi_TCP.o:
-	gcc -Wall -c ./src/client_envoi_TCP.c -I ./include
-
-client_reception_TCP.o:
-	gcc -Wall -c ./src/client_reception_TCP.c -I ./include
+client_commons_tcp.o:
+	gcc -Wall -c ./src/client_commons_tcp.c -I ./include
 
 client_manuel.o:
 	gcc -Wall -c ./src/client_manuel.c -I ./include

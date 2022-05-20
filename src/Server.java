@@ -99,8 +99,10 @@ public class Server{
     
     /* FONCTIONS TESTS DE VALIDITE */
     static boolean idOk(String id){
-        for(ServiceClient client:connectedUsers)//check qu'il n'y a pas de joueur qui porte deja ce pseudo
+        for(ServiceClient client:connectedUsers){//check qu'il n'y a pas de joueur qui porte deja ce pseudo
+            System.out.println(client.getID());
             if(client.getID()!=null && client.getID().equals(id)) return false;
+        }
         return id.matches("[a-zA-Z0-9]{8}");
     }
     /* FIN FONCTIONS TESTS DE VALIDITE */

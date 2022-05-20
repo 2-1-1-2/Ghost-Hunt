@@ -1,5 +1,4 @@
-#include "client_envoi_TCP.h"
-#include "client_reception_TCP.h"
+#include "client_commons_tcp.h"
 #define OP_NEWPL 0
 #define OP_REGIS 1
 #define OP_LGAME 0
@@ -28,7 +27,7 @@ int endingOK(char request[]){
 }
 
 int communicationBeforeStart(int sock, client *infoClient){
-    int res=readReplyLists(sock, OP_LGAME);
+    int res=readReplyLists(sock, OP_LGAME, 0);
     int sentStart=0;
     while(!sentStart && res){//res==0 si erreur quelque part
         char request[100];
@@ -39,11 +38,11 @@ int communicationBeforeStart(int sock, client *infoClient){
             type[5]='\0';
             if(strcmp(type, "NEWPL")==0){
                 res=sendNEWREG(sock, infoClient, request, OP_NEWPL);
-                res=res && readReplyREG(sock);
+                res=res && readReplyREG(sock, infoClient);
             }
             else if(strcmp(type, "REGIS")==0){
                 res=sendNEWREG(sock, infoClient, request, OP_REGIS);
-                res=res && readReplyREG(sock);
+                res=res && readReplyREG(sock, infoClient);
             }
             else if(strcmp(type, "START")==0){
                 sentStart=1;
@@ -51,19 +50,20 @@ int communicationBeforeStart(int sock, client *infoClient){
             }
             else if(strcmp(type, "UNREG")==0){
                 res=res && _send(sock, request, strlen(request));
-                res=res && _read(sock);
+                char reply[50];
+                res=res && _read(sock, reply, -1, 1);
             }
             else if(strcmp(type, "GAME?")==0){
                 res=res && _send(sock, request, strlen(request));
-                res=res && readReplyLists(sock, OP_LGAME);
+                res=res && readReplyLists(sock, OP_LGAME, 0);
             }
             else if(strcmp(type, "SIZE?")==0){
-                res=res && sendSIZEorLIST(sock, request, type);
+                res=res && sendSIZEorLIST(sock, request);
                 res=res && readReplySIZE(sock);
             }
             else if(strcmp(type, "LIST?")==0){
-                res=res && sendSIZEorLIST(sock, request, type);
-                res=res && readReplyLists(sock, OP_LLIST);
+                res=res && sendSIZEorLIST(sock, request);
+                res=res && readReplyLists(sock, OP_LLIST, 0);
             }
         }
     }
@@ -72,6 +72,7 @@ int communicationBeforeStart(int sock, client *infoClient){
 
 int communicationGame(int sock){
     int end=0;
+    int res=0;
     while(!end){
         char request[100];
         char type[6];//type de la requete
@@ -103,6 +104,7 @@ int communicationGame(int sock){
             }
         }
     }
+    return res;
 }
 
 // 1. se connecter au serveur (main)
