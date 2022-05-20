@@ -108,6 +108,10 @@ int communicationGame(int sock){
             res=res && _send(sock, request, strlen(request));
             char reply[50];
             res=res && _read(sock, reply, -1, 1);
+            
+            strncpy(type, reply, 5);
+            type[5]='\0';
+            if(strcmp(type, "GOBYE")==0) end=1;
             //}
         }
     }
