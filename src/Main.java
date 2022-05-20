@@ -10,17 +10,18 @@ public class Main{
         g.addPlayerInGame(p4);*/
         g.gameStart();
 
+        Thread.sleep(2000);
         g.moveUp(p1, 50);
         g.moveRight(p1, 50);
         g.moveDown(p1, 50);
         g.moveLeft(p1, 50);
 
-        //Thread.sleep(1000);
+        Thread.sleep(1000);
 
         g.moveUp(p2, 50);
         g.moveRight(p2, 50);
         g.moveDown(p2, 50);
-        //Thread.sleep(1000);
+        Thread.sleep(1000);
         g.moveLeft(p2, 50);
     }
 }

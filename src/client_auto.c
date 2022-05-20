@@ -1,5 +1,6 @@
 #include "client_fonction_tcp.h"
 #include "client.h"
+#include "client_commons_tcp.h"
 
     /* ----- rappel taille en octet -----*/
     //* n      : nombre de partie               : 1 octet - uint8 
@@ -19,11 +20,10 @@
 
 int main(int argc, char const *argv[]){
     /*--- connection au server - TCP ---*/
-    int port = 6666;
-    if(argc==2){
-        port == atoi(argv[1]);
-    }
+    int port=6666;
+    if(argc==2) port=atoi(argv[1]);
 
+    //TODO: a partir de la :)
     int sock_tcp = connection(port, "localhost");
 
     if(sock_tcp == -1){
@@ -63,6 +63,35 @@ int main(int argc, char const *argv[]){
     //* DOMOV d
     //* LEMOV d
     //* RIMOV d
+    //* IQUIT
+    
+    
+    /*
+    NEWPL id portUDP***
+    REGIS id portUDP game.numGame***
+    UNREG***
+    GAME?***
+    SIZE? game.numGame***
+    LIST? game.numGame***
+    START***
+
+
+    ACTEX***
+   (CLOEX***)
+    UPMOV nbPas***
+    RIMOV nbPas***
+    DOMOV nbPas***
+    LEMOV nbPas***
+
+    CHKIT***
+    DRPIT***
+
+    GLIS?***
+    MALL? message***
+    SEND? player.username message***
+
+    IQUIT*** -> quit()
+    */
     return 0;
 }
 

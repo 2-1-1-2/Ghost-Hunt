@@ -155,5 +155,23 @@ int readReplySIZE(int sock){
     int w = (tab2[0] - '0')+ (tab2[1] - '0');
     printf("%s %d %d***\n",requete,h,w);
     free(requete);
+    printf("tab : %c %c %c %c\n", tab1[0], tab1[1], tab2[0], tab2[1]);
     return 1;
+}
+
+int readWelcomeAndPos(int sock, partie* p){
+    char buff[150];
+    int res=_read(sock, buff, -1, 1);//welco
+    if(res==0) return res;
+    int i=0;
+    int offset=10+2*sizeof(uint8_t)+2*sizeof(uint16_t);
+    while(buff[offset+i]!='#'){
+        (p->ip)[i]=buff[offset+i];
+        i++;
+    }
+    (p->ip)[i]='\0';
+    p->portMultD=atoi(&buff[26+2*sizeof(uint8_t)+2*sizeof(uint16_t)]);
+    
+    res=_read(sock, buff, -1, 1);//posit
+    return res;
 }

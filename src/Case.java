@@ -92,6 +92,11 @@ public class Case{
         if(isWall()) return Color.BLACK.getRGB();
         if(hasGhost()) return Color.BLUE.darker().getRGB();
         if(hasPlayer()) return Color.PINK.getRGB();
+        if(hasItem()){
+            if(item.isBombe()) return Color.RED.darker().getRGB();
+            if(item.isLampe()) return Color.RED.brighter().brighter().brighter().getRGB();
+            if(item.isRadar()) return Color.RED.getRGB();
+        }
         return Color.WHITE.getRGB();
     }
 }   

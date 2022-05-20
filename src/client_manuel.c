@@ -26,6 +26,7 @@ int endingOK(char request[]){
     return 1;
 }
 
+
 int communicationBeforeStart(int sock, client *infoClient){
     int res=readReplyLists(sock, OP_LGAME, 0);
     int sentStart=0;
@@ -84,17 +85,11 @@ int communicationGame(int sock){
         char type[6];//type de la requete
         fgets(request, 100, stdin);//met deja le \0 a la fin
         if(endingOK(request)){
-            if(strcmp(type, "UPMOV")==0){
-
-            }
-            else if(strcmp(type, "DOMOV")==0){
-
-            }
-            else if(strcmp(type, "LEMOV")==0){
-
-            }
-            else if(strcmp(type, "RIMOV")==0){
-
+            /*if(strcmp(type, "UPMOV")==0 || strcmp(type, "DOMOV")==0
+                || strcmp(type, "LEMOV")==0 || strcmp(type, "RIMOV")==0){
+                res=res && _send(sock, request, strlen(request));
+                char reply[50];
+                res=res && _read(sock, reply, -1, 1);
             }
             else if(strcmp(type, "IQUIT")==0){
 
@@ -108,6 +103,11 @@ int communicationGame(int sock){
             else if(strcmp(type, "SEND?")==0){
 
             }
+            else{*/
+            res=res && _send(sock, request, strlen(request));
+            char reply[50];
+            res=res && _read(sock, reply, -1, 1);
+            //}
         }
     }
     return res;
@@ -141,10 +141,13 @@ int main(int argc, char* argv[]){
     int res=communicationBeforeStart(sfd, infoClient);
     
     char replyServer[100];
-    //TODO : reception du welcome et abonnement a l'adresse de multiD
+    partie* p=malloc(sizeof(struct partie));
+    res=readWelcomeAndPos(sock, p);
     if(res!=0){//pas d'erreur, on peut continuer ?
+        //TODO: abonnement multicast
         res=communicationGame(sfd);
     }
     free(infoClient);
+    free(p);
     return res;
 }

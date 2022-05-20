@@ -3,7 +3,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 /*
@@ -74,6 +78,10 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     boolean isPlayer(String id, Game game){
         return this.id.equals(id) && this.game==game;
     }
+    
+    boolean sameGame(Game game){
+        return this.game==game;
+    }
 
     /* FONCTIONS PRINCIPALES DE TRAITEMENT DES REQUETES */
     String parsing() throws IOException{
@@ -85,8 +93,6 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             msg+=reading;
             if(reading=='*') nbStars++;
             else nbStars=0;
-            //TODO: gerer quand on pourrait avoir *** puis une suite de message encore (MALL)
-            //if(nbStars==3) //enlever dans la cdt du while
         }
         System.out.println("player sent : "+msg);
         return msg;
@@ -117,17 +123,18 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         else if(type.equals("SIZE?")) sizeMaze(sc.next().charAt(0));
         else if(type.equals("LIST?")) listPlayers(sc.next().charAt(0));
         else if(type.equals("GAME?***")) listGames();
+        else if(type.equals("IQUIT***")) quit(false);
         else dunno();
     }
 
     void parseGameCommand(String msg) throws IOException{
         Scanner sc=new Scanner(msg);
         String type=sc.next();
-        if(!game.isOnGoing()) quit();
-        else if(type.equals("UPMOV")) moveUp(sc.nextInt());
-        else if(type.equals("RIMOV")) moveRight(sc.nextInt());
-        else if(type.equals("DOMOV")) moveDown(sc.nextInt());
-        else if(type.equals("LEMOV")) moveLeft(sc.nextInt());
+        if(!game.isOnGoing()) quit(true);
+        else if(type.equals("UPMOV")) moveUp(sc.next());
+        else if(type.equals("RIMOV")) moveRight(sc.next());
+        else if(type.equals("DOMOV")) moveDown(sc.next());
+        else if(type.equals("LEMOV")) moveLeft(sc.next());
         
         else if(type.equals("ACTEX***")) activeExtension();
         else if(type.equals("CLOEX***")) closeExtension();
@@ -137,7 +144,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         else if(type.equals("GLIS?***")) listPlayersCurrent();
         else if(type.equals("MALL?")) messageToAll(sc.next());
         else if(type.equals("SEND?")) sendToPlayer(sc.next(), sc.next());
-        else if(type.equals("IQUIT***")) quit();
+        else if(type.equals("IQUIT***")) quit(true);
         else dunno();
     }
     
@@ -212,24 +219,38 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     
     /* TRAITEMENT DES COMMANDES LORS D'UNE PARTIE */
-    void moveUp(int nbStep){
-        send(moveRes(game.moveUp(player, nbStep)));
-        game.noMoreGhost();
+
+
+    void moveUp(String nbStep){
+        if(nbStep.length()==3){
+            send(moveRes(game.moveUp(player, Integer.parseInt(nbStep))));
+            game.noMoreGhost();
+        }
+        else dunno();
     }
     
-    void moveRight(int nbStep){
-        send(moveRes(game.moveRight(player, nbStep)));
-        game.noMoreGhost();
+    void moveRight(String nbStep){
+        if(nbStep.length()==3){
+            send(moveRes(game.moveRight(player, Integer.parseInt(nbStep))));
+            game.noMoreGhost();
+        }
+        else dunno();
     }
     
-    void moveDown(int nbStep){
-        send(moveRes(game.moveDown(player, nbStep)));
-        game.noMoreGhost();
+    void moveDown(String nbStep){
+        if(nbStep.length()==3){
+            send(moveRes(game.moveDown(player, Integer.parseInt(nbStep))));
+            game.noMoreGhost();
+        }
+        else dunno();
     }
     
-    void moveLeft(int nbStep){
-        send(moveRes(game.moveLeft(player, nbStep)));
-        game.noMoreGhost();
+    void moveLeft(String nbStep){
+        if(nbStep.length()==3){
+            send(moveRes(game.moveLeft(player, Integer.parseInt(nbStep))));
+            game.noMoreGhost();
+        }
+        else dunno();
     }
     
     String moveRes(boolean[] get){
@@ -272,8 +293,20 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void messageToAll(String msg){
-        //TODO: envoyer un message a tous les joueurs, sur le port multi-diffuse
-        
+        msg="MESSA "+id+" "+msg+"+++";
+        LinkedList<ServiceClient> clients=Server.getPlayers(this.game);
+        for(ServiceClient servC : clients){
+            try{
+                DatagramSocket dso=new DatagramSocket();
+                byte[] data=msg.getBytes();
+                InetSocketAddress isa=new InetSocketAddress(servC.sock.getInetAddress().getHostAddress(), servC.portUDP);
+                DatagramPacket paquet=new DatagramPacket(data, data.length, isa);
+                dso.send(paquet);
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+        }
         send("MALL!***");
     }
     
@@ -286,15 +319,27 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             send("NSEND***");
             return;
         }
+        msg="MESSP "+id+" "+msg+"+++";
         //TODO: envoyer un message au portUDP du Player(id) 
+        
         
         send("SEND!***");
     }
     
-    void quit(){
-        game.removePlayerFromGame(player);
+    void quit(boolean inGame){
+        if(inGame){
+            game.removePlayerFromGame(player);
+            this.game=null;
+        }
         send("GOBYE***");
-        this.game=null;
+        try{
+            this.reader.close();
+            this.writer.close();
+            this.sock.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
         Server.removeClient(this);
     }
     /* FIN TRAITEMENT DES COMMANDES */

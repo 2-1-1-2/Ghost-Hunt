@@ -15,6 +15,11 @@ typedef struct client{
     uint8_t numPartie;
 } client;
 
+typedef struct partie{
+    int portMultD;
+    char ip[16];
+} partie;
+
 int _send(int sock, void* buff, size_t n);
 int sendNEWREG(int sock, client *infoClient, char request[], int op);
 int sendSIZEorLIST(int sock, char request[]);

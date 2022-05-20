@@ -122,8 +122,6 @@ public class Server{
         ByteBuffer bb = ByteBuffer.allocate(2); 
         bb.putShort((short)n);
         bb.order(ByteOrder.LITTLE_ENDIAN);
-        
-        //System.out.println(bb.getInt());
         return bb.array();
         //return new byte[]{(byte)(n & 0xFF), (byte)((n>>8) & 0xFF)};
     }
@@ -154,7 +152,6 @@ public class Server{
         Game g=games.get(numGame);
         byte[] hBytes=intToLE(g.getHeight());
         byte[] wBytes=intToLE(g.getWidth());
-        System.out.println(hBytes[0]+" "+hBytes[1]+" "+wBytes[0]+" "+wBytes[1]+"***");
         return "SIZE! "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+"***";
     }
 
@@ -165,6 +162,13 @@ public class Server{
         toSend+=g.getListPlayers();
         System.out.println(toSend);
         return toSend;
+    }
+    
+    static LinkedList<ServiceClient> getPlayers(Game game){
+        LinkedList<ServiceClient> res=new LinkedList<ServiceClient>();
+        for(ServiceClient servC : connectedUsers)
+            if(servC.sameGame(game)) res.add(servC);
+        return res;
     }
     
     static int getPlayerUDP(String id, Game game){
