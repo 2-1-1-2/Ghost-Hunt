@@ -65,6 +65,11 @@ int communicationBeforeStart(int sock, client *infoClient){
                 res=res && sendSIZEorLIST(sock, request);
                 res=res && readReplyLists(sock, OP_LLIST, 0);
             }
+            else{
+                res=res && _send(sock, request, strlen(request));
+                char reply[50];
+                res=res && _read(sock, reply, -1, 1);
+            }
         }
     }
     return res;
@@ -130,14 +135,15 @@ int main(int argc, char* argv[]){
         return EXIT_FAILURE;
     }
 
-    client infoClient;
-    infoClient.numPartie=-1;//pas encore inscrit
-    int res=communicationBeforeStart(sfd, &infoClient);
+    client* infoClient=malloc(sizeof(struct client));
+    infoClient->numPartie=-1;//pas encore inscrit
+    int res=communicationBeforeStart(sfd, infoClient);
     
     char replyServer[100];
     //TODO : reception du welcome et abonnement a l'adresse de multiD
     if(res!=0){//pas d'erreur, on peut continuer ?
         res=communicationGame(sfd);
     }
+    free(infoClient);
     return res;
 }

@@ -36,7 +36,7 @@ int sendSIZEorLIST(int sock, char request[]){
     int res=_send(sock, tmp, strlen(tmp));//envoi du type de la requete
     uint8_t m=atoi(&request[6]);
     res=res && _send(sock, &m, sizeof(uint8_t));
-    res=res && _send(sock, "***", 3);
+    res=res && _send(sock, "**", 3);
     return res;
 }
 
@@ -71,6 +71,7 @@ int _read(int sock, char* buffer, int len, int affiche){
 
 /// RECEPTION REGNO OU REGOK
 int readReplyREG(int sock, client *infoClient){
+    printf("readREG\n");
     char reply[50];
     int res=_read(sock, reply, -1, 1);
     if(res!=0){

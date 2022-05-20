@@ -97,7 +97,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         String type=sc.next();
         if(type.equals("NEWPL")){
             this.id=sc.next();
-            if(!Server.idOk(this.id)) dunno();
+            if(!Server.idOk(this.id, this)) dunno();
             else{
                 this.player=new Player(id);
                 this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
@@ -106,7 +106,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         }
         else if(type.equals("REGIS")){
             this.id=sc.next();
-            if(!Server.idOk(id)) dunno();
+            if(!Server.idOk(id, this)) dunno();
             else{
                 this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
                 register(sc.next().charAt(0));
