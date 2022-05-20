@@ -2,6 +2,7 @@
 char delim_espace[] = " ";
 char delim_stars[] = "*";
 
+//TODO: a voir s'il y a encore des parties utiles
 int connection(int port, const char * hote){
     struct addrinfo *first_info;
     struct addrinfo hints;

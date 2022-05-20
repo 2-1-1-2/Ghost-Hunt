@@ -34,7 +34,6 @@ int communicationBeforeStart(int sock, client *infoClient){
         char request[100];
         char type[6];//type de la requete
         fgets(request, 100, stdin);//met deja le \0 a la fin
-        //strtok(request, "\n");
         if(endingOK(request)){
             strncpy(type, request, 5);
             type[5]='\0';
@@ -147,16 +146,11 @@ int main(int argc, char* argv[]){
     
     char replyServer[100];
     partie* p=malloc(sizeof(struct partie));
-    //todo : remplir les infos
-    /*partie{
-    int portMultD;
-    char ip[16];
-} partie;
-
-    */
     res=readWelcomeAndPos(sfd, p);
     if(res!=0){//pas d'erreur, on peut continuer ?
-        //TODO: abonnement multicast
+        //TODO: Thread(receptionUDP(), sock) pour ecouter en UDP
+        //TODO: Thread(receptionMulticast(), sock) pour ecouter en UDP
+        
         res=communicationGame(sfd);
     }
     free(infoClient);

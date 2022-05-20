@@ -128,6 +128,28 @@ int readWelcomeAndPos(int sock, partie* p){
     (p->ip)[i]='\0';
     p->portMultD=atoi(&buff[26+2*sizeof(uint8_t)+2*sizeof(uint16_t)]);
     
+    //TODO: abonnement multicast -> a verifier si c'est bon
+    int ok=1;
+    int r=setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &ok, sizeof(ok));
+    if(r==-1) return 0;
+    
+    struct sockaddr_in address_sock;
+    address_sock.sin_family=AF_INET;
+    address_sock.sin_port=htons(p->portMultiD);
+    address_sock.sin_addr.s_addr=htonl(INADDR_ANY);
+    r=bind(sock, (struct sockaddr *)&address_sock, sizeof(struct sockaddr_in));
+    if(r==-1) return 0;
+    
+    struct ip_mreq mreq;
+    mreq.imr_multiaddr.s_addr=inet_addr(p->ip);
+    mreq.imr_interface.s_addr=htonl(INADDR_ANY);
+    r=setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+    if(r==-1) return 0;
+    
     res=_read(sock, buff, -1, 1);//posit
     return res;
 }
+
+//TODO: read UDP
+
+//TODO: recv multicast

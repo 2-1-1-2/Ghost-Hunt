@@ -127,7 +127,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         else dunno();
     }
 
-    synchronized void  parseGameCommand(String msg) throws IOException{
+    void parseGameCommand(String msg) throws IOException{
         Scanner sc=new Scanner(msg);
         String type=sc.next();
         if(!game.isOnGoing()) quit(true);
@@ -179,15 +179,13 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     //si tous les joueurs sont en train de waiting, alors lancer la partie
     //sinon, juste changer le boolean waiting
     void start(){
-        if(this.game==null) dunno();
-        else if(this.game!=null && !this.player.sentStart()){
+        if(this.game!=null && !this.player.sentStart()){
             this.player.setStartStatus(true);
             if(Server.canStart(game.getNum()))
-                send(Server.sendWelcome(game.getNum())+"POSIT "+player.currentInfo(false));
+                for(ServiceClient servC : Server.getPlayers(this.game))
+                    servC.send(Server.sendWelcome(game.getNum())+"POSIT "+servC.player.currentInfo(false));
         }
-        
-        //si le joueur a deja start, on ne fait rien du tout
-        //comme un "bloquage"
+        else dunno();
     }
 
     void unregister(){
