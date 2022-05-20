@@ -95,21 +95,21 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void parseReplyBeforeStart(String msg){
         Scanner sc=new Scanner(msg);
         String type=sc.next();
-        if(type.equals("NEWPL")){
+        if(type.equals("NEWPL") && game==null){
             this.id=sc.next();
             if(!Server.idOk(this.id, this)) dunno();
             else{
                 this.player=new Player(id);
-                this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
+                this.portUDP=Integer.parseInt(sc.next().substring(0, 4));
                 createGame();
             }
         }
-        else if(type.equals("REGIS")){
+        else if(type.equals("REGIS") && game==null){
             this.id=sc.next();
             if(!Server.idOk(id, this)) dunno();
             else{
-                this.portUDP=Integer.valueOf(sc.next().substring(0, 4));
-                register(sc.next().charAt(0));
+                this.portUDP=Integer.parseInt(sc.next().substring(0, 4));
+                register(Integer.parseInt(sc.next().replace("***", "")));
             }
         }
         else if(type.equals("START***")) start();
@@ -152,15 +152,17 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     //creer une nouvelle partie
     void createGame(){
         this.game=Server.createGame(this.player);
+        send("REGOK "+(byte)game.getNum()+"***");
     }
 
     //s'inscrire a la partie no.numGame
     void register(int numGame){
+        System.out.println(numGame);
         if(numGame>=0 && numGame<Server.getNbGames()){
             if(player==null) this.player=new Player(id);
             else this.player.changeID(this.id);
             this.game=Server.addInGame(this.player, numGame);
-            send("REGOK "+(byte)numGame);
+            send("REGOK "+(byte)numGame+"***");
         }
         else send("REGNO***");
     }
@@ -183,8 +185,8 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void unregister(){
         if(this.game!=null){
             game.removePlayerFromGame(player);
-            this.game=null;
             send("UNROK "+(byte)game.getNum()+"***");
+            this.game=null;
         }
         else dunno();
     }
@@ -272,7 +274,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     void messageToAll(String msg){
         //TODO: envoyer un message a tous les joueurs, sur le port multi-diffuse
         
-        send("MALL!");
+        send("MALL!***");
     }
     
     int getPlayerUDP(String id){
@@ -291,7 +293,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     
     void quit(){
         game.removePlayerFromGame(player);
-        send("GOBYE");
+        send("GOBYE***");
         this.game=null;
         Server.removeClient(this);
     }

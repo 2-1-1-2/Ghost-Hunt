@@ -22,6 +22,14 @@ client_manuel.o:
 
 distclean: clean_client
 
+serveur:
+	javac ./src/*.java
+
+	
+lance_serveur:
+	cd src && java Server
+
+
 clean: clean_o clean_client
 
 clean_client:
@@ -30,3 +38,4 @@ clean_client:
 
 clean_o:
 	rm -f *.o
+	rm -f ./src/*.class

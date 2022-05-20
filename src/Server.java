@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -117,7 +119,13 @@ public class Server{
     
     //convertit un entier en little endian
     static byte[] intToLE(int n){
-        return new byte[]{(byte)(n & 0xFF), (byte)((n>>8) & 0xFF)};
+        ByteBuffer bb = ByteBuffer.allocate(2); 
+        bb.putShort((short)n);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        
+        //System.out.println(bb.getInt());
+        return bb.array();
+        //return new byte[]{(byte)(n & 0xFF), (byte)((n>>8) & 0xFF)};
     }
     /* FIN FFONCTIONS DE CONVERSION */
 
@@ -146,6 +154,7 @@ public class Server{
         Game g=games.get(numGame);
         byte[] hBytes=intToLE(g.getHeight());
         byte[] wBytes=intToLE(g.getWidth());
+        System.out.println(hBytes[0]+" "+hBytes[1]+" "+wBytes[0]+" "+wBytes[1]+"***");
         return "SIZE! "+(byte)numGame+" "+hBytes[0]+hBytes[1]+" "+wBytes[0]+wBytes[1]+"***";
     }
 

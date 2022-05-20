@@ -84,8 +84,10 @@ public class Game{
 
     /* GENERATION DU LABYRINTHE ET DE SES COMPOSANTES */
     void generateMaze(){
-        int height=(int)(Math.random()*20)+10;
-        int width=(int)(Math.random()*20)+10;
+        //int height=(int)(Math.random()*20)+10;
+        int height=5;
+        //int width=(int)(Math.random()*20)+10;
+        int width=10;
         MazeGenerator generator=new MazeGenerator(height, width);
         
         maze=new Case[2*height+1][2*width+1];

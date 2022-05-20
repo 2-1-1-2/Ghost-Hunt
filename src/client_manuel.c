@@ -33,6 +33,7 @@ int communicationBeforeStart(int sock, client *infoClient){
         char request[100];
         char type[6];//type de la requete
         fgets(request, 100, stdin);//met deja le \0 a la fin
+        //strtok(request, "\n");
         if(endingOK(request)){
             strncpy(type, request, 5);
             type[5]='\0';

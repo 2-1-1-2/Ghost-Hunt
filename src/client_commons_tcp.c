@@ -7,9 +7,9 @@ int _send(int sock, void* buff, size_t n){
     int r=send(sock, buff, n, 0);
     if(r==-1){
         printf("error sending request\n");
-        return EXIT_FAILURE;
+        return 0;
     }
-    return EXIT_SUCCESS;
+    return 1;
 }
 /// FIN
 
@@ -36,7 +36,7 @@ int sendSIZEorLIST(int sock, char request[]){
     int res=_send(sock, tmp, strlen(tmp));//envoi du type de la requete
     uint8_t m=atoi(&request[6]);
     res=res && _send(sock, &m, sizeof(uint8_t));
-    res=res && _send(sock, "**", 3);
+    res=res && _send(sock, "***", 3);
     return res;
 }
 
@@ -51,6 +51,7 @@ int _read(int sock, char* buffer, int len, int affiche){
                 return 0;
             }
             if(buffer[i]=='*') nbStars++;
+            else nbStars=0;
             i++;
         }
     }
@@ -115,18 +116,43 @@ int readReplyLists(int sock, int op, int isAuto){
 
 /// RECEPTION SIZE 
 int readReplySIZE(int sock){
-    char reply[50];
-    int res=_read(sock, reply, 11+sizeof(uint8_t), 1);
-    //TODO: verifier si byte c'est ok
+    /*char reply[50];
+    int res=_read(sock, reply, 7+sizeof(uint8_t), 1); //SIZE! num
     if(res==0) return res;
-    char tmp[3];
-    res=_read(sock, tmp, 2, 0);
+    
+    char tmp[sizeof(uint16_t)];
+    //res=_read(sock, tmp, 2, 0); //h
+    res=_read(sock, tmp, sizeof(uint16_t), 1); //h
     if(res==0) return res;
     uint16_t h=((tmp[1]<<8) | tmp[0]);
-    res=_read(sock, tmp, 2, 0);
+    
+    //res=_read(sock, tmp, 2, 0); //w
+    res=_read(sock, tmp, sizeof(uint16_t), 1); //w
     if(res==0) return res;
     uint16_t w=((tmp[1]<<8) | tmp[0]);
-    printf("%d %d", h, w);
-    res=_read(sock, reply, -1, 1);
-    return res;
+    
+    //printf("%d %d", h, w);
+    res=_read(sock, reply, -1, 1); //***
+    return res;*/
+    
+    
+    
+    char buff[1000];
+    int size_rec=read(sock,buff,999*sizeof(char));
+    buff[size_rec]='\0';
+    char * requete = malloc(7);
+    for(int i = 0;i<7;i++){
+            requete[i] = buff[i];
+    }
+    char tab1[2];
+    tab1[0] = buff[8];
+    tab1[1] = buff[9];
+    char tab2[2];
+    tab2[0] = buff[11];
+    tab2[1] = buff[12];
+    int h = (tab1[0] - '0')+ (tab1[1] - '0');
+    int w = (tab2[0] - '0')+ (tab2[1] - '0');
+    printf("%s %d %d***\n",requete,h,w);
+    free(requete);
+    return 1;
 }
