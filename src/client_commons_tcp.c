@@ -105,6 +105,7 @@ int readReplyLists(int sock, int op, int isAuto){
         }
     }
     else{
+        if(op==1) nbIterations=(uint8_t)atoi(&list[8]);
         for(int i=0; i<nbIterations; i++){
             char tmp[50];
             res=_read(sock, tmp, -1, 1);

@@ -20,7 +20,7 @@ public class Player{
         return this.id;
     }
 
-    public String toStrinG(){
+    public String toString(){
         return "PLAYR "+id+"***";
     }
     

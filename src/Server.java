@@ -163,6 +163,7 @@ public class Server{
         Game g=games.get(numGame);
         String toSend="LIST! "+(byte)numGame+" "+(byte)g.getNbPlayers()+"***";
         toSend+=g.getListPlayers();
+        System.out.println(toSend);
         return toSend;
     }
     
@@ -175,7 +176,7 @@ public class Server{
 
     
     static String sendWelcome(int numGame){
-        Game g=games.get(getNbGames());
+        Game g=games.get(numGame);
         games.remove(g.gameStart());
         byte[] hBytes=intToLE(g.getHeight());
         byte[] wBytes=intToLE(g.getWidth());
