@@ -76,6 +76,7 @@ public class Game{
     String getIP(){
         String res=this.addressMultiD.getAddress().toString();
         for(int i=res.length(); i<16; i++) res+="#";
+        System.out.println(res);
         return res;
     }
     

@@ -123,7 +123,6 @@ public class Server{
         bb.putShort((short)n);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         return bb.array();
-        //return new byte[]{(byte)(n & 0xFF), (byte)((n>>8) & 0xFF)};
     }
     /* FIN FFONCTIONS DE CONVERSION */
 

@@ -61,7 +61,8 @@ int communicationBeforeStart(int sock, client *infoClient){
             }
             else if(strcmp(type, "SIZE?")==0){
                 res=res && sendSIZEorLIST(sock, request);
-                res=res && readReplySIZE(sock);
+                char reply[50];
+                res=res && _read(sock, reply, -1, 1);
             }
             else if(strcmp(type, "LIST?")==0){
                 res=res && sendSIZEorLIST(sock, request);
@@ -142,7 +143,7 @@ int main(int argc, char* argv[]){
     
     char replyServer[100];
     partie* p=malloc(sizeof(struct partie));
-    res=readWelcomeAndPos(sock, p);
+    res=readWelcomeAndPos(sfd, p);
     if(res!=0){//pas d'erreur, on peut continuer ?
         //TODO: abonnement multicast
         res=communicationGame(sfd);

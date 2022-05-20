@@ -1,6 +1,5 @@
 #include "client_fonction_tcp.h"
 #include "client.h"
-#include "client_commons_tcp.h"
 
     /* ----- rappel taille en octet -----*/
     //* n      : nombre de partie               : 1 octet - uint8 
@@ -20,7 +19,7 @@
 
 int main(int argc, char const *argv[]){
     /*--- connection au server - TCP ---*/
-    int port=6666;
+    /*int port=6666;
     if(argc==2) port=atoi(argv[1]);
 
     //TODO: a partir de la :)
@@ -33,7 +32,7 @@ int main(int argc, char const *argv[]){
     printf("connexion faite\n");
     /*------------ PSEUDO ------------*/
 
-    srand(time(NULL));
+    /*srand(time(NULL));
     char * name = calloc(1, 8);
     random_name(name);
     

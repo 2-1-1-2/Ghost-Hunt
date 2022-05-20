@@ -115,50 +115,6 @@ int readReplyLists(int sock, int op, int isAuto){
     return res;
 }
 
-/// RECEPTION SIZE 
-int readReplySIZE(int sock){
-    /*char reply[50];
-    int res=_read(sock, reply, 7+sizeof(uint8_t), 1); //SIZE! num
-    if(res==0) return res;
-    
-    char tmp[sizeof(uint16_t)];
-    //res=_read(sock, tmp, 2, 0); //h
-    res=_read(sock, tmp, sizeof(uint16_t), 1); //h
-    if(res==0) return res;
-    uint16_t h=((tmp[1]<<8) | tmp[0]);
-    
-    //res=_read(sock, tmp, 2, 0); //w
-    res=_read(sock, tmp, sizeof(uint16_t), 1); //w
-    if(res==0) return res;
-    uint16_t w=((tmp[1]<<8) | tmp[0]);
-    
-    //printf("%d %d", h, w);
-    res=_read(sock, reply, -1, 1); //***
-    return res;*/
-    
-    
-    
-    char buff[1000];
-    int size_rec=read(sock,buff,999*sizeof(char));
-    buff[size_rec]='\0';
-    char * requete = malloc(7);
-    for(int i = 0;i<7;i++){
-            requete[i] = buff[i];
-    }
-    char tab1[2];
-    tab1[0] = buff[8];
-    tab1[1] = buff[9];
-    char tab2[2];
-    tab2[0] = buff[11];
-    tab2[1] = buff[12];
-    int h = (tab1[0] - '0')+ (tab1[1] - '0');
-    int w = (tab2[0] - '0')+ (tab2[1] - '0');
-    printf("%s %d %d***\n",requete,h,w);
-    free(requete);
-    printf("tab : %c %c %c %c\n", tab1[0], tab1[1], tab2[0], tab2[1]);
-    return 1;
-}
-
 int readWelcomeAndPos(int sock, partie* p){
     char buff[150];
     int res=_read(sock, buff, -1, 1);//welco
