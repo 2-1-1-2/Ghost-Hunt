@@ -28,3 +28,5 @@ int _read(int sock, char* buffer, int len, int affiche);
 int readReplyREG(int sock, client *infoClient);
 int readReplyLists(int sock, int op, int isAuto);
 int readReplySIZE(int sock);
+
+int readWelcomeAndPos(int sock, partie* p);

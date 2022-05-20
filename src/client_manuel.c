@@ -80,7 +80,7 @@ int communicationBeforeStart(int sock, client *infoClient){
 
 int communicationGame(int sock){
     int end=0;
-    int res=0;
+    int res=1;
     while(!end){
         char request[100];
         char type[6];//type de la requete
@@ -147,6 +147,13 @@ int main(int argc, char* argv[]){
     
     char replyServer[100];
     partie* p=malloc(sizeof(struct partie));
+    //todo : remplir les infos
+    /*partie{
+    int portMultD;
+    char ip[16];
+} partie;
+
+    */
     res=readWelcomeAndPos(sfd, p);
     if(res!=0){//pas d'erreur, on peut continuer ?
         //TODO: abonnement multicast

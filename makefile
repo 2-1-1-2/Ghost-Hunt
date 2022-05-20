@@ -1,4 +1,6 @@
-all: client_auto client_manuel
+all: client_manuel serveur
+
+redo: clean  all
 
 redo: distclean all
 
@@ -25,17 +27,24 @@ distclean: clean_client
 serveur:
 	javac ./src/*.java
 
+_client:
+	./src/client_manuel
+
 	
-lance_serveur:
+_serveur:
 	cd src && java Server
 
 
-clean: clean_o clean_client
+clean: clean_o clean_client clean_serv
 
 clean_client:
 	rm -f ./src/client_auto
 
 
+
+clean_serv:
+	rm -f ./src/*.class
+
+
 clean_o:
 	rm -f *.o
-	rm -f ./src/*.class

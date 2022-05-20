@@ -1,10 +1,6 @@
-make --dry-run --always-make --keep-going --print-directory
+make --dry-run --keep-going --print-directory
 make: Entering directory '/home/tanya/Cours/TP/projet/RES/ProgReseaux'
-gcc -c ./src/client_auto.c -I ./include
-gcc -c ./src/client_fonction_tcp.c -I ./include
-gcc -o ./src/client_auto client_auto.o client_fonction_tcp.o
-gcc -Wall -c ./src/client_manuel.c -I ./include
-gcc -Wall -c ./src/client_commons_tcp.c -I ./include
 gcc -Wall -o ./src/client_manuel client_manuel.o client_commons_tcp.o
+javac ./src/*.java
 make: Leaving directory '/home/tanya/Cours/TP/projet/RES/ProgReseaux'
  

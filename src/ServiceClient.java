@@ -127,7 +127,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
         else dunno();
     }
 
-    void parseGameCommand(String msg) throws IOException{
+    synchronized void  parseGameCommand(String msg) throws IOException{
         Scanner sc=new Scanner(msg);
         String type=sc.next();
         if(!game.isOnGoing()) quit(true);
@@ -179,12 +179,13 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     //si tous les joueurs sont en train de waiting, alors lancer la partie
     //sinon, juste changer le boolean waiting
     void start(){
-        if(this.game!=null && !this.player.sentStart()){
+        if(this.game==null) dunno();
+        else if(this.game!=null && !this.player.sentStart()){
             this.player.setStartStatus(true);
             if(Server.canStart(game.getNum()))
                 send(Server.sendWelcome(game.getNum())+"POSIT "+player.currentInfo(false));
         }
-        else if(this.game==null) dunno();
+        
         //si le joueur a deja start, on ne fait rien du tout
         //comme un "bloquage"
     }
@@ -222,6 +223,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
 
 
     void moveUp(String nbStep){
+        nbStep = nbStep.replace("***", "");
         if(nbStep.length()==3){
             send(moveRes(game.moveUp(player, Integer.parseInt(nbStep))));
             game.noMoreGhost();
@@ -230,6 +232,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void moveRight(String nbStep){
+        nbStep = nbStep.replace("***", "");
         if(nbStep.length()==3){
             send(moveRes(game.moveRight(player, Integer.parseInt(nbStep))));
             game.noMoreGhost();
@@ -238,6 +241,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void moveDown(String nbStep){
+        nbStep = nbStep.replace("***", "");
         if(nbStep.length()==3){
             send(moveRes(game.moveDown(player, Integer.parseInt(nbStep))));
             game.noMoreGhost();
@@ -246,6 +250,7 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
     }
     
     void moveLeft(String nbStep){
+        nbStep = nbStep.replace("***", "");
         if(nbStep.length()==3){
             send(moveRes(game.moveLeft(player, Integer.parseInt(nbStep))));
             game.noMoreGhost();
