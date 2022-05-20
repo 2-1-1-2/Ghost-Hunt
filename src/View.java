@@ -61,7 +61,6 @@ public class View extends JFrame{
                     display.setRGB(j, i, mazeColor[i][j]);
         }
 
-        //TODO: introduire un peu d'animation pour que le deplacement ne soit pas trop brusque
         void refreshMaze(int row, int col, int color){
             display.setRGB(col, row, color);
             this.repaint();

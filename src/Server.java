@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 /*
-TODO: envoyer
+A envoyer
 OK GAMES nbGames*** -> listGames()
 OK     OGAME game.numGame game.nbPlayers*** -> listGames()
 
@@ -55,7 +55,7 @@ OK     GPLYR player.username player.row player.col player.score*** -> listPlayer
 OK MESSA playerSender.username message*** -> messageToAll(message)
 OK MALL!*** -> messageToAll(message)
 OK MESSP playerSender.username message*** -> sendToPlayer(id, message)
-X SEND!*** -> sendToPlayer(id, message)
+OK SEND!*** -> sendToPlayer(id, message)
 OK NSEND*** -> sendToPlayer(id, message)
 
 OK GOBYE*** -> quit()

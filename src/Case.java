@@ -87,7 +87,6 @@ public class Case{
     
     
     /* EN RAPPORT AVEC LA PARTIE GRAPHIQUE */
-    //TODO: item=dessin en plus sur la case et non couleur ?
     int getColor(){
         if(isWall()) return Color.BLACK.getRGB();
         if(hasGhost()) return Color.BLUE.darker().getRGB();

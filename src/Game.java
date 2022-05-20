@@ -72,7 +72,6 @@ public class Game{
         return res;
     }
     
-    //TODO: verifier si c'est bien ca qu'il faut retourner (ip=225.10.12.4#### par exemple)
     String getIP(){
         String res=this.addressMultiD.getAddress().toString();
         for(int i=res.length(); i<16; i++) res+="#";

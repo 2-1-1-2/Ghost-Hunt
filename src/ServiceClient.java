@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 /*
-TODO: recevoir
+A recevoir
 OK NEWPL id portUDP*** -> createGame()
 OK REGIS id portUDP game.numGame*** -> register(numGame)
 
@@ -33,8 +33,8 @@ OK DRPIT*** -> dropItem()
 OK CHKIT*** -> checkItem()
 
 OK GLIS?*** -> listPlayersCurrent()
-X MALL? message*** -> messageToAll(message)
-X SEND? player.username message*** -> sendToPlayer(username, message)
+OK MALL? message*** -> messageToAll(message)
+OK SEND? player.username message*** -> sendToPlayer(username, message)
 
 OK IQUIT*** -> quit()
 */
