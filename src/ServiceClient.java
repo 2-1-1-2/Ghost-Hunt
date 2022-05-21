@@ -105,17 +105,25 @@ public class ServiceClient implements Runnable{//en fait, c'est une extension du
             this.id=sc.next();
             if(!Server.idOk(this.id, this)) dunno();
             else{
-                this.player=new Player(id);
-                this.portUDP=Integer.parseInt(sc.next().substring(0, 4));
-                createGame();
+                int port=Integer.parseInt(sc.next().substring(0, 4));
+                if(!Server.portUDPOk(port, this)) dunno();
+                else{
+                    this.portUDP=port;
+                    this.player=new Player(id);
+                    createGame();
+                }
             }
         }
         else if(type.equals("REGIS") && game==null){
             this.id=sc.next();
             if(!Server.idOk(id, this)) dunno();
             else{
-                this.portUDP=Integer.parseInt(sc.next().substring(0, 4));
-                register(Integer.parseInt(sc.next().replace("***", "")));
+                int port=Integer.parseInt(sc.next().substring(0, 4));
+                if(!Server.portUDPOk(port, this)) dunno();
+                else{
+                    this.port=port;
+                    register(Integer.parseInt(sc.next().replace("***", "")));
+                }
             }
         }
         else if(type.equals("START***")) start();

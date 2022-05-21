@@ -106,6 +106,12 @@ public class Server{
         }
         return id.matches("[a-zA-Z0-9]{8}");
     }
+
+    static boolean portUDPOk(int port, ServiceClient c){
+        for(ServiceClient client:connectedUsers)
+            if(client!=c && client.getPort()==c.getPort()) return false;
+        return port>=1000;
+    }
     /* FIN FONCTIONS TESTS DE VALIDITE */
     
     
